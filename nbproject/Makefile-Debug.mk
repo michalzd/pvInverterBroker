@@ -37,8 +37,6 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/lib/ConfigFile.o \
 	${OBJECTDIR}/lib/ModbusAdu.o \
-	${OBJECTDIR}/nbproject/private/c_standard_headers_indexer.o \
-	${OBJECTDIR}/nbproject/private/cpp_standard_headers_indexer.o \
 	${OBJECTDIR}/src/ImeConfig.o \
 	${OBJECTDIR}/src/ImeInverter.o \
 	${OBJECTDIR}/src/ImeService.o \
@@ -68,7 +66,7 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/inverterbroker: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/inverterbroker ${OBJECTFILES} ${LDLIBSOPTIONS}
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/inverterbroker ${OBJECTFILES} ${LDLIBSOPTIONS}
 
 ${OBJECTDIR}/lib/ConfigFile.o: lib/ConfigFile.c
 	${MKDIR} -p ${OBJECTDIR}/lib
@@ -79,16 +77,6 @@ ${OBJECTDIR}/lib/ModbusAdu.o: lib/ModbusAdu.c
 	${MKDIR} -p ${OBJECTDIR}/lib
 	${RM} "$@.d"
 	$(COMPILE.c) -g -DPARAM_SERVICE_DEBUG_INFO -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/ModbusAdu.o lib/ModbusAdu.c
-
-${OBJECTDIR}/nbproject/private/c_standard_headers_indexer.o: nbproject/private/c_standard_headers_indexer.c
-	${MKDIR} -p ${OBJECTDIR}/nbproject/private
-	${RM} "$@.d"
-	$(COMPILE.c) -g -DPARAM_SERVICE_DEBUG_INFO -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbproject/private/c_standard_headers_indexer.o nbproject/private/c_standard_headers_indexer.c
-
-${OBJECTDIR}/nbproject/private/cpp_standard_headers_indexer.o: nbproject/private/cpp_standard_headers_indexer.cpp
-	${MKDIR} -p ${OBJECTDIR}/nbproject/private
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/nbproject/private/cpp_standard_headers_indexer.o nbproject/private/cpp_standard_headers_indexer.cpp
 
 ${OBJECTDIR}/src/ImeConfig.o: src/ImeConfig.c
 	${MKDIR} -p ${OBJECTDIR}/src

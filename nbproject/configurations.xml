@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="100">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
-    <logicalFolder name="dist" displayName="dist" projectFiles="true">
-      <logicalFolder name="Debug" displayName="Debug" projectFiles="true">
-        <logicalFolder name="GNU-Linux" displayName="GNU-Linux" projectFiles="true">
-          <itemPath>dist/Debug/GNU-Linux/inverterbroker</itemPath>
-        </logicalFolder>
-      </logicalFolder>
-      <logicalFolder name="Release" displayName="Release" projectFiles="true">
-        <logicalFolder name="GNU-Linux" displayName="GNU-Linux" projectFiles="true">
-          <itemPath>dist/Release/GNU-Linux/inverterbroker</itemPath>
-        </logicalFolder>
-      </logicalFolder>
-    </logicalFolder>
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
@@ -20,31 +8,6 @@
         <itemPath>include/BrokerService.h</itemPath>
         <itemPath>include/Ime.h</itemPath>
       </logicalFolder>
-    </logicalFolder>
-    <logicalFolder name="include" displayName="include" projectFiles="true">
-    </logicalFolder>
-    <logicalFolder name="nbproject" displayName="nbproject" projectFiles="true">
-      <logicalFolder name="private" displayName="private" projectFiles="true">
-        <itemPath>nbproject/private/Makefile-variables.mk</itemPath>
-        <itemPath>nbproject/private/c_standard_headers_indexer.c</itemPath>
-        <itemPath>nbproject/private/configurations.xml</itemPath>
-        <itemPath>nbproject/private/cpp_standard_headers_indexer.cpp</itemPath>
-        <itemPath>nbproject/private/downloads-192.168.10.70-mimi-22</itemPath>
-        <itemPath>nbproject/private/downloads-192.168.10.82-mimi-22</itemPath>
-        <itemPath>nbproject/private/launcher.properties</itemPath>
-        <itemPath>nbproject/private/private.xml</itemPath>
-        <itemPath>nbproject/private/timestamps-192.168.10.70-mimi-22</itemPath>
-        <itemPath>nbproject/private/timestamps-192.168.10.80-mimi-22</itemPath>
-        <itemPath>nbproject/private/timestamps-192.168.10.82-mimi-22</itemPath>
-      </logicalFolder>
-      <itemPath>nbproject/Makefile-Debug.mk</itemPath>
-      <itemPath>nbproject/Makefile-Release.mk</itemPath>
-      <itemPath>nbproject/Makefile-impl.mk</itemPath>
-      <itemPath>nbproject/Makefile-variables.mk</itemPath>
-      <itemPath>nbproject/Package-Debug.bash</itemPath>
-      <itemPath>nbproject/Package-Release.bash</itemPath>
-      <itemPath>nbproject/configurations.xml</itemPath>
-      <itemPath>nbproject/project.xml</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -71,8 +34,6 @@
         <itemPath>src/main.c</itemPath>
       </logicalFolder>
     </logicalFolder>
-    <logicalFolder name="src" displayName="src" projectFiles="true">
-    </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
                    projectFiles="false"
@@ -92,8 +53,6 @@
     <Elem>lib</Elem>
     <Elem>src</Elem>
     <Elem>include</Elem>
-    <Elem>dist</Elem>
-    <Elem>nbproject</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -115,16 +74,6 @@
           </preprocessorList>
         </cTool>
       </compileType>
-      <item path="dist/Debug/GNU-Linux/inverterbroker"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="dist/Release/GNU-Linux/inverterbroker"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="include/BrokerService.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="include/Ime.h" ex="false" tool="3" flavor2="0">
@@ -136,74 +85,6 @@
       <item path="lib/ModbusAdu.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="lib/ModbusAdu.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Makefile-Debug.mk" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Makefile-Release.mk" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Makefile-impl.mk" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Makefile-variables.mk" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Package-Debug.bash" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Package-Release.bash" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/configurations.xml" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/private/Makefile-variables.mk"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/c_standard_headers_indexer.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/configurations.xml"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/cpp_standard_headers_indexer.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/downloads-192.168.10.70-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/downloads-192.168.10.82-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/launcher.properties"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/private.xml" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/private/timestamps-192.168.10.70-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/timestamps-192.168.10.80-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/timestamps-192.168.10.82-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/project.xml" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ImeConfig.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -249,16 +130,6 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
-      <item path="dist/Debug/GNU-Linux/inverterbroker"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="dist/Release/GNU-Linux/inverterbroker"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="include/BrokerService.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="include/Ime.h" ex="false" tool="3" flavor2="0">
@@ -270,74 +141,6 @@
       <item path="lib/ModbusAdu.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="lib/ModbusAdu.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Makefile-Debug.mk" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Makefile-Release.mk" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Makefile-impl.mk" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Makefile-variables.mk" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Package-Debug.bash" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/Package-Release.bash" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/configurations.xml" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/private/Makefile-variables.mk"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/c_standard_headers_indexer.c"
-            ex="false"
-            tool="0"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/configurations.xml"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/cpp_standard_headers_indexer.cpp"
-            ex="false"
-            tool="1"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/downloads-192.168.10.70-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/downloads-192.168.10.82-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/launcher.properties"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/private.xml" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="nbproject/private/timestamps-192.168.10.70-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/timestamps-192.168.10.80-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/private/timestamps-192.168.10.82-mimi-22"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
-      <item path="nbproject/project.xml" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/ImeConfig.c" ex="false" tool="0" flavor2="0">
       </item>

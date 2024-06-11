@@ -48,6 +48,7 @@ struct ServiceResponseInverterInfo inverterInfo;
 
 static int ime_service_logger_msg(int sck);
 static int ime_service_request(int sck); 
+static int ime_service_send_InverterInfo();
 
 /*
  * open UDP socket as server
@@ -189,7 +190,7 @@ int ime_service_logger_msg(int sck)
 }
 
 
-
+static
 int ime_service_request_Listener(int sck, const struct sockaddr_in *si_sender, const socklen_t slen, void * request)
 {
     struct ServiceRequestInverterInfoListener *listenerinfo = request;
@@ -223,13 +224,14 @@ int ime_service_request_Listener(int sck, const struct sockaddr_in *si_sender, c
     return IME_RETURN_CODE_OK;
 }
 
+static
 int ime_service_request_InverterInfo(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     sendto(sck, &inverterInfo, sizeof(struct ServiceResponseInverterInfo), 0, (const struct sockaddr *) si_sender, slen);
     return IME_RETURN_CODE_OK;
 }
 
-// nieprzetestowane
+static
 int ime_service_request_InverterState(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     struct  Inverter *inverterState = &(inverterInfo.InverterState);
@@ -237,7 +239,7 @@ int ime_service_request_InverterState(int sck, const struct sockaddr_in *si_send
     return IME_RETURN_CODE_OK;
 }
 
-// nieprzetestowane
+static 
 int ime_service_request_GridState(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     struct  Grid *gridState = &(inverterInfo.Grid);
@@ -245,7 +247,7 @@ int ime_service_request_GridState(int sck, const struct sockaddr_in *si_sender, 
     return IME_RETURN_CODE_OK;
 }
 
-
+static
 int ime_service_send_InverterInfo()
 {
     if(Listerer_sck>0)   ime_service_request_InverterInfo(Listerer_sck, &Listener, sizeof(Listener) );
@@ -254,6 +256,7 @@ int ime_service_send_InverterInfo()
 }
 
 
+static
 int ime_service_request_InfoJson(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
 #define MSGINFOMAXSIZE 256

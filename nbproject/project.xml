@@ -5,7 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
             <name>inverterBroker</name>
             <c-extensions>c</c-extensions>
-            <cpp-extensions>cpp</cpp-extensions>
+            <cpp-extensions/>
             <header-extensions>h</header-extensions>
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
@@ -13,8 +13,6 @@
                 <sourceRootElem>lib</sourceRootElem>
                 <sourceRootElem>src</sourceRootElem>
                 <sourceRootElem>include</sourceRootElem>
-                <sourceRootElem>dist</sourceRootElem>
-                <sourceRootElem>nbproject</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

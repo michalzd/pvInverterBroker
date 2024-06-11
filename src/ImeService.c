@@ -273,6 +273,7 @@ int ime_service_request_InfoJson(int sck, const struct sockaddr_in *si_sender, c
 }
 
 
+static
 int ime_service_request_default(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     char *hello = "Hello";

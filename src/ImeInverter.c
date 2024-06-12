@@ -31,15 +31,13 @@
 #include "ImeInverter.h"
 #include "ImeService.h"
 #include "ImeConfig.h"
-#include "LoggerSofar.h"
+#include "Logger.h"
 
 volatile struct Inverter  inverterState;
 volatile struct Grid	  gridState;
 
 struct InverterPV InverterInputPV1;
 struct InverterPV InverterInputPV2;
-
-struct tm*   time_info;
 
 
 /*
@@ -50,13 +48,10 @@ struct tm*   time_info;
 static int fd[2];
 pid_t inverter_thread_pid;
 int   inverter_thread_sck;
+
+uint16_t    refresh_time;
 volatile int refreshtimer;
 
-
-static inline void ime_inverter_refresh()    
-{
-    logger_sofar_refresh();  // do podmiany na funkcje odpowiednią dla invertera
-}
 
 static int ime_inverter_msg_send();
 
@@ -64,27 +59,13 @@ int ime_inverter_init()
 {
 	inverterState.state = InverterStateInit;
 	inverterState.activepower = 0;
-	return ime_inverter_clear();
+	return logger_clear_data();
 }
 
-int ime_inverter_clear()
+
+void ime_inverter_set_refresh_time(uint16_t rtime)
 {
-	inverterState.activepower = 0;
-        inverterState.averagepower = 0;
-	gridState.Rvoltage = 0;
-	gridState.Rcurrent = 0;
-	gridState.Svoltage = 0;
-	gridState.Scurrent = 0;
-	gridState.Tvoltage = 0;
-	gridState.Tcurrent = 0;
-
-	InverterInputPV1.voltage = 0;
-	InverterInputPV1.current = 0;
-
-	InverterInputPV2.voltage = 0;
-	InverterInputPV2.current = 0;
-
-	return IME_RETURN_CODE_OK;
+    refresh_time = rtime;
 }
 
 
@@ -129,7 +110,6 @@ int ime_inverter_thread( void *none)
     struct pollfd poolfd;
     int ret; 
     int refreshtimer;
-    time_t timer;
     
     while(run)
     {
@@ -138,16 +118,10 @@ int ime_inverter_thread( void *none)
 	ret = poll(&poolfd, 1, 15000); // 15 second for timeout
 	
         refreshtimer+=15;
-        if(run && refreshtimer >= sofarLogger.refreshtime )
+        if(run && refreshtimer >= refresh_time )
         { 
-            timer = time(NULL);
-            time_info = localtime(&timer);
             refreshtimer = 0;
-            inverterState.tmsec = time_info->tm_sec;
-            inverterState.tmmin = time_info->tm_min;
-            inverterState.tmhour = time_info->tm_hour;
-            inverterState.tmweekday = time_info->tm_wday;
-            ime_inverter_refresh();
+            logger_refresh();
             ime_inverter_msg_send();
         }
         

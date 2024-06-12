@@ -21,16 +21,8 @@ enum SocketPair {
     childsocket = 1
 };
 
-
-extern volatile struct Inverter  inverterState;
-extern volatile struct Grid	 gridState;
-
-extern struct InverterPV InverterInputPV1;
-extern struct InverterPV InverterInputPV2;
-
-int ime_inverter_init();
-int ime_inverter_clear();
-
+int     ime_inverter_init(); 
+void    ime_inverter_set_refresh_time(uint16_t rtime);
 int     ime_inverter_thread_sck();
 pid_t	ime_inverter_thread_create();
 int     ime_inverter_thread( void *none);

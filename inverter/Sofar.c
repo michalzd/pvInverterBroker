@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <arpa/inet.h>
-#include <Ime.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <netdb.h>
@@ -17,13 +16,16 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "LoggerSofar.h"
+#include "Sofar.h"
 #include "ImeConfig.h"
-#include "ImeInverter.h"
+#include "Logger.h"
 
 
 #define REQUEST_DBG 0
 #define RESPONSE_DBG 0
+
+struct SofarLogger SofarLogger;
+
 
 struct  LoggerRequestFrame
 {
@@ -63,7 +65,7 @@ static int  lastAvrPower = 0;
 static
 uint64_t sofar_GetSerialNo(void)
 {
-	uint64_t tsn = sofarLogger.sn;
+	uint64_t tsn = SofarLogger.sn;
 	union  SerialNo sn;
 	sn.byte[0] = tsn;
 	tsn = tsn >> 8;
@@ -136,14 +138,9 @@ int logger_sofar_connect()
 	setsockopt(loggerSck, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
 
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_addr.s_addr = sofarLogger.address;
-	serverAddr.sin_port = htons(sofarLogger.port);
-
-	/*
-		serverAddr.sin_port = htons(3456); // brak połączenia
-		test_i--;
-	 **/
-
+	serverAddr.sin_addr.s_addr = SofarLogger.address;
+	serverAddr.sin_port = htons(SofarLogger.port);
+        
 	int err = connect(loggerSck, (struct sockaddr *) &serverAddr, sizeof(serverAddr) );
 	if(err<0) {
 		sck_error = errno;
@@ -237,7 +234,7 @@ int logger_sofar_RecvResponse(ModBus_Response_t * modbusresponse)
 {
     int rsize;
     int16_t datasize;
-    struct LoggerResponseFrame responseframe;
+    static struct LoggerResponseFrame responseframe;
 
     if(loggerSck<=0) return IME_RETURN_ERR_SOCK_RECV;
 
@@ -254,7 +251,7 @@ int logger_sofar_RecvResponse(ModBus_Response_t * modbusresponse)
     modbusresponse->functioncode = responseframe.data[15];
     modbusresponse->size = responseframe.data[16];
     modbusresponse->data = &responseframe.data[17];
-    // ostatnie dwa bajty to CRC
+    //  CRC on two bytes
     modbusresponse->crc = (responseframe.data[datasize-1] << 8) + responseframe.data[datasize-2];
 
     return IME_RETURN_CODE_OK;
@@ -264,29 +261,10 @@ int logger_sofar_RecvResponse(ModBus_Response_t * modbusresponse)
 
 int logger_sofar_refresh()
 {
-    static uint iconnerr=0;
-    uint8_t	 error_code = 0;
-
-    int rv = logger_sofar_connect();
-    if(rv!=IME_RETURN_CODE_OK) error_code = InverterStateConnectionErr;
-    else
-    {
-        iconnerr = 0;
-        rv = logger_sofar_inverter_grid();
-        if(rv==IME_RETURN_CODE_OK) logger_sofar_inverter_state();
-        if(rv==IME_RETURN_CODE_OK) logger_sofar_inverter_inputs();
-        if(rv!=IME_RETURN_CODE_OK) error_code = InverterStateSocketErr;
-    }
-    logger_sofar_diconnect();
-
-    if(error_code)
-    {
-        iconnerr++;
-        if(iconnerr > 3) ime_inverter_clear();
-        logger_sofar_inverter_error(error_code);
-        return rv;
-    }
-
+    int rv;
+    logger_sofar_inverter_grid();       // stan sieci odczytuję zawsze
+    rv = logger_sofar_inverter_state();
+    logger_sofar_inverter_inputs(); 
     return rv;
 }
 
@@ -294,11 +272,12 @@ int logger_sofar_refresh()
  * Sofar Modbus frames
  */
 static
-int Sofar_GetSysState(struct Sofar_SysStateInfo *responsestruct)
+int Sofar_GetSysState(struct Sofar_SysStateInfo *sys_state_info)
 {
     int rv;
     ModBus_Request_t modbusrequest;
     ModBus_Response_t modbusresponse;
+    struct Sofar_SysStateInfo *responsedata;
 
     // Sofar Registers  0x0400 to 0x0416
     uint16_t registerFrom = 0x0400;
@@ -314,17 +293,26 @@ int Sofar_GetSysState(struct Sofar_SysStateInfo *responsestruct)
     rv = logger_sofar_RecvResponse(&modbusresponse );
     if(rv!=IME_RETURN_CODE_OK) return rv;
 
-    modbus_cpydataswap(modbusresponse.data, responsestruct, sizeof(struct Sofar_SysStateInfo));
+    responsedata = (struct Sofar_SysStateInfo *) modbusresponse.data;
+    sys_state_info->SysState = ntohs(responsedata->SysState);
+    
+    // FaultTable[18]  
+    for(int i=0; i<18; i++)
+    {
+        sys_state_info->FaultTable[i] = ntohs(responsedata->FaultTable[i]);
+    }
+
     return IME_RETURN_CODE_OK;
 }
 
 
 static
-int Sofar_GetOnGridPower(struct Sofar_OnGrigPowerOutput *responsestruct)
+int Sofar_GetOnGridPower(struct Sofar_OnGrigPowerOutput *grid_power_output)
 {
     int rv;
     ModBus_Request_t modbusrequest;
     ModBus_Response_t modbusresponse;
+    struct Sofar_OnGrigPowerOutput *responsedata;
 
     // Sofar Registers  0x0480 to 0x048a
     uint16_t registerFrom = 0x0480;
@@ -339,18 +327,27 @@ int Sofar_GetOnGridPower(struct Sofar_OnGrigPowerOutput *responsestruct)
     if(rv!=IME_RETURN_CODE_OK) return rv; 						// send error if not zero
     rv = logger_sofar_RecvResponse(&modbusresponse );
     if(rv!=IME_RETURN_CODE_OK) return rv;
-
-    modbus_cpydataswap(modbusresponse.data, responsestruct, sizeof(struct Sofar_OnGrigPowerOutput));
+    
+    responsedata = (struct Sofar_OnGrigPowerOutput *) modbusresponse.data;
+    grid_power_output->FrequencyGrid = ntohs(responsedata->FrequencyGrid);
+    grid_power_output->ActivePowerOutputTotal = ntohs(responsedata->ActivePowerOutputTotal);
+    grid_power_output->ReactivePowerOutputTotal = ntohs(responsedata->ReactivePowerOutputTotal);         
+    grid_power_output->ApparetPowerOutputTotal  = ntohs(responsedata->ApparetPowerOutputTotal);
+    grid_power_output->ActivePowerPccTotal   = ntohs(responsedata->ActivePowerPccTotal);
+    grid_power_output->ReactivePowerPccTotal = ntohs(responsedata->ReactivePowerPccTotal);
+    grid_power_output->ApparetPowerPccTotal  = ntohs(responsedata->ApparetPowerPccTotal);
+    
     return IME_RETURN_CODE_OK;
 }
 
 
 static
-int Sofar_GetOnGridPhase(struct Sofar_OnGrigPhasePower *responsestruct)
+int Sofar_GetOnGridPhase(struct Sofar_OnGridPhasePower *grid_phase_power)
 {
     int rv;
     ModBus_Request_t modbusrequest;
     ModBus_Response_t modbusresponse;
+    struct Sofar_OnGridPhasePower *responsedata;
 
     // Sofar Registers  0x048d to 0x04bc
     uint16_t registerFrom = 0x048d;
@@ -365,16 +362,35 @@ int Sofar_GetOnGridPhase(struct Sofar_OnGrigPhasePower *responsestruct)
     if(rv!=IME_RETURN_CODE_OK) return rv; 						// send error if not zero
     rv = logger_sofar_RecvResponse(&modbusresponse );
     if(rv!=IME_RETURN_CODE_OK) return rv;
-
-    modbus_cpydataswap(modbusresponse.data, responsestruct, sizeof(struct Sofar_OnGrigPhasePower));
+    
+    responsedata = (struct Sofar_OnGridPhasePower *) modbusresponse.data;
+    grid_phase_power->Voltage_R = ntohs(responsedata->Voltage_R);
+    grid_phase_power->Current_R = ntohs(responsedata->Current_R);
+    grid_phase_power->ActivePower_R = ntohs(responsedata->ActivePower_R);
+    grid_phase_power->ReactivePower_R = ntohs(responsedata->ReactivePower_R);
+    grid_phase_power->PowerFactor_R = ntohs(responsedata->PowerFactor_R);
+    
+    grid_phase_power->Voltage_S = ntohs(responsedata->Voltage_S);
+    grid_phase_power->Current_S = ntohs(responsedata->Current_S);
+    grid_phase_power->ActivePower_S = ntohs(responsedata->ActivePower_S);
+    grid_phase_power->ReactivePower_S = ntohs(responsedata->ReactivePower_S);
+    grid_phase_power->PowerFactor_S = ntohs(responsedata->PowerFactor_S);
+    
+    grid_phase_power->Voltage_T = ntohs(responsedata->Voltage_T);
+    grid_phase_power->Current_T = ntohs(responsedata->Current_T);
+    grid_phase_power->ActivePower_T = ntohs(responsedata->ActivePower_T);
+    grid_phase_power->ReactivePower_T = ntohs(responsedata->ReactivePower_T);
+    grid_phase_power->PowerFactor_T = ntohs(responsedata->PowerFactor_T);
+     
     return IME_RETURN_CODE_OK;
 }
 
-int Sofar_GetPVInput(struct Sofar_PVInput *responsestruct)
+int Sofar_GetPVInput(struct Sofar_PVInput *pv_input)
 {
     int rv;
     ModBus_Request_t modbusrequest;
     ModBus_Response_t modbusresponse;
+    struct Sofar_PVInput *responsedata;
 
     // Sofar Registers  0x048d to 0x04bc
     uint16_t registerFrom = 0x0580;
@@ -389,14 +405,25 @@ int Sofar_GetPVInput(struct Sofar_PVInput *responsestruct)
     if(rv!=IME_RETURN_CODE_OK) return rv;
     rv = logger_sofar_RecvResponse(&modbusresponse );
     if(rv!=IME_RETURN_CODE_OK) return rv;
-
-    modbus_cpydataswap(modbusresponse.data, responsestruct, sizeof(struct Sofar_PVInput));
+    
+    responsedata = (struct Sofar_PVInput *) modbusresponse.data;
+    pv_input->VoltagePV1 = ntohs(responsedata->VoltagePV1);
+    pv_input->CurrentPV1 = ntohs(responsedata->CurrentPV1);
+    pv_input->PowerPV1 = ntohs(responsedata->PowerPV1);
+    pv_input->VoltagePV2 = ntohs(responsedata->VoltagePV2);
+    pv_input->CurrentPV2 = ntohs(responsedata->CurrentPV2);
+    pv_input->PowerPV2   = ntohs(responsedata->PowerPV2);
+    pv_input->VoltagePV3 = ntohs(responsedata->VoltagePV3);
+    pv_input->CurrentPV3 = ntohs(responsedata->CurrentPV3);
+    pv_input->PowerPV3   = ntohs(responsedata->PowerPV3);
+     
     return IME_RETURN_CODE_OK;
 }
 
+
 /*
  * convert sofar state into enum
- * Operating status
+ * SOFAR operating status
 		0: waiting state
 		1: Detection status
 		2: Grid-connected status
@@ -423,58 +450,37 @@ uint8_t Sofar_StateConvert( uint16_t sofar_state)
  * Logger functions
  */
 
-int logger_sofar_inverter_error( uint8_t errmsg)
-{
-    inverterState.state = InverterStateConnectionErr;
-    inverterState.activepower = 0;
-    return IME_RETURN_CODE_OK;
-}
-
 int logger_sofar_inverter_state()
 {
     struct Sofar_SysStateInfo 	sysState;
     struct Sofar_OnGrigPowerOutput	powerOutput;
     int rcv;
-    int dmin;
-    static uint32_t  powersum = 0;
-    static uint8_t	 lastminsum = 0;
-
+    
     inverterState.state = lastState;
     inverterState.activepower = lastPower;
-    inverterState.averagepower = lastAvrPower;
-
-    if(inverterState.tmmin == 1 && lastminsum==0) 
-    {
-        inverterState.averagepower = 0 ;
-        powersum = 0;
-    }
 
     rcv = Sofar_GetSysState(&sysState);
     if(rcv) return rcv;
+    
     inverterState.state = Sofar_StateConvert(sysState.SysState);
-
-    if(sysState.SysState==2)  // normal 
+    if(sysState.SysState==2)  
     {
-        rcv = Sofar_GetOnGridPower(&powerOutput);
-        if(rcv) return rcv;
+        Sofar_GetOnGridPower(&powerOutput);
         inverterState.activepower = powerOutput.ActivePowerOutputTotal;
+        if(inverterState.activepower==0) inverterState.activepower = lastPower;
     }
-    else if(sysState.SysState==4) // grid fault
+    else 
     {
-        inverterState.activepower = 0;
+        // czasem bywa dziwny status, ale produkcja idzie, przestawiam to na stan normalny
+        if(sysState.SysState > 2)
+           if(gridState.Rcurrent > 100 || gridState.Scurrent > 100 || gridState.Tcurrent > 100) inverterState.state = 0; 
+    
+        if(inverterState.state==InverterStateGridFault)  inverterState.activepower = 0;
     }
-
-    if(inverterState.tmmin != lastminsum) {
-        powersum += inverterState.activepower;
-        dmin = inverterState.tmmin;
-        if(dmin==0) dmin = 60;
-        inverterState.averagepower = powersum / dmin;
-    }
-
+    
+    lastState = inverterState.state;
     lastPower = inverterState.activepower;
-    lastAvrPower = inverterState.averagepower;
-    lastminsum = inverterState.tmmin;
-
+      
     return IME_RETURN_CODE_OK;
 }
 
@@ -497,7 +503,7 @@ int logger_sofar_inverter_inputs()
 
 int logger_sofar_inverter_grid()
 {
-    struct Sofar_OnGrigPhasePower PhaseState;
+    struct Sofar_OnGridPhasePower PhaseState;
     int rcv;
 
     rcv = Sofar_GetOnGridPhase(&PhaseState);
@@ -515,29 +521,6 @@ int logger_sofar_inverter_grid()
     gridState.Scurrent = PhaseState.Current_S;
     gridState.Tvoltage = PhaseState.Voltage_T;
     gridState.Tcurrent = PhaseState.Current_T;
-
-    /*
-     * okreslam najwyższe napięcie na fazach
-     */
-    gridState.voltage = gridState.Rvoltage;
-    gridState.maxphase = Phase_R;
-    if(gridState.voltage<gridState.Svoltage)
-    {
-            gridState.voltage = gridState.Svoltage;
-            gridState.maxphase = Phase_S;
-    }
-    if(gridState.voltage<gridState.Tvoltage)
-    {
-            gridState.voltage = gridState.Tvoltage;
-            gridState.maxphase = Phase_T;
-    }
-    gridState.phaseOverV = 0;
-    if(gridState.Rvoltage > OVERVOLTAGE_LIMIT) gridState.phaseOverV |= Phase_R;
-    if(gridState.Svoltage > OVERVOLTAGE_LIMIT) gridState.phaseOverV |= Phase_S;
-    if(gridState.Tvoltage > OVERVOLTAGE_LIMIT) gridState.phaseOverV |= Phase_T;
-
-    lastState = 0;
-    if(PhaseState.Current_R > 100 || PhaseState.Current_S > 100 || PhaseState.Current_T > 100) lastState = 2;
 
     return IME_RETURN_CODE_OK;
 }

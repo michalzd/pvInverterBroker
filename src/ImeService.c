@@ -89,7 +89,7 @@ int  ime_service_start()
         syslog (LOG_ERR, "InverterBroker: socket error: %i", errno );
         if(print_debug_info)
         {
-            printf("ImeBroker: port %i error ", service.port);
+            printf("InverterBroker port %i error ", service.port);
             puts("");
         }
         return IME_RETURN_ERR_SOCK;
@@ -97,7 +97,7 @@ int  ime_service_start()
     syslog (LOG_INFO, "InverterBroker: socket port: %i", service.port ); 
     if(print_debug_info)
     {
-        printf("ImeBroker: port %i ", service.port);
+        printf("InverterBroker port %i ", service.port);
         puts("");
     }
     srvsocket = s;
@@ -169,12 +169,16 @@ int ime_service_logger_msg(int sck)
     
     if(print_debug_info)
     {
-       printf(" PV State:%i Power: %i [dekaWat]  RST:%i %i %i [decyVolt]", 
+       printf(" PV State:%i Power[dekaWaty]: %i Avg: %i;  RST [decyVolty]:%i %i %i  [centyAmpery]: %i %i %i", 
               inverterInfo.InverterState.state, 
-              ntohs(inverterInfo.InverterState.activepower),
+              ntohs(inverterInfo.InverterState.activepower), 
+              ntohs(inverterInfo.InverterState.averagepower),
               ntohs(inverterInfo.Grid.Rvoltage),
               ntohs(inverterInfo.Grid.Svoltage),
-              ntohs(inverterInfo.Grid.Tvoltage)
+              ntohs(inverterInfo.Grid.Tvoltage),
+              ntohs(inverterInfo.Grid.Rcurrent),
+              ntohs(inverterInfo.Grid.Scurrent),
+              ntohs(inverterInfo.Grid.Tcurrent)
               );
        puts("");
     }

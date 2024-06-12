@@ -15,17 +15,21 @@
 #include <stdint.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-
 #include "ModbusAdu.h"
 
-#define OVERVOLTAGE_LIMIT 2530
-
 /* server Sofar Logger LSW-3 by TCP */
+struct	SofarLogger
+{
+    in_addr_t   address;
+    uint16_t    port;
+    uint64_t    sn;
+};
 
-int logger_sofar_connect();
+extern struct SofarLogger SofarLogger;
+
+int  logger_sofar_connect();
 void logger_sofar_diconnect();
-
-int logger_sofar_refresh();
+int  logger_sofar_refresh();
 
 /*
  *  send/receive modbus data
@@ -65,7 +69,7 @@ struct Sofar_OnGrigPowerOutput
 };
 
 // Sofar Registers  0x048d to 0x04bc
-struct Sofar_OnGrigPhasePower
+struct Sofar_OnGridPhasePower
 {
     uint16_t Voltage_R;
     uint16_t Current_R;

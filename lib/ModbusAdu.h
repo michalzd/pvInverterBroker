@@ -40,9 +40,7 @@ typedef struct ModBus_Request ModBus_Request_t;
 typedef struct ModBus_Response ModBus_Response_t;
 
 uint16_t modbusrequest_crc(const ModBus_Request_t * modbusrequest, uint8_t size);
-uint16_t modbusswap(uint16_t w16b);
-uint8_t  * modbus_cpydata(void *srcmodbusdata, void *desdata, uint8_t len);
-uint16_t * modbus_cpydataswap(void *srcmodbusdata, void *desdata, uint8_t len);
+uint16_t modbusswap(uint16_t w16b); 
 
 
 

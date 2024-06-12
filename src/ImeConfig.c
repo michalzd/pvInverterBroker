@@ -19,9 +19,9 @@
 
 #include "ImeConfig.h"
 #include "ConfigFile.h"
+#include "Logger.h"
 
-struct	ServiceUdp	service;
-struct	SofarLogger sofarLogger;
+struct	ServiceUdp	service; 
 
 
 struct	ServiceUdp* config_get_service()
@@ -29,23 +29,15 @@ struct	ServiceUdp* config_get_service()
     return &service;
 }
 
-struct	SofarLogger* config_get_logger()
+
+int config_SetLoggerPar( const char *serialno, const char *ip_address, const char *ip_port, const char *refresh_time )
 {
-    return &sofarLogger;
-}
-
-
-int config_SetSofarPar( const char *serialno, const char *ip_address, const char *ip_port, const char *refresh_time )
-{
-    char *end;
-    sofarLogger.sn = strtoll(serialno, &end, 10);
-    inet_pton(AF_INET, ip_address, &sofarLogger.address);
-    sofarLogger.port = atoi(ip_port);
-    sofarLogger.refreshtime = atoi(refresh_time);
-
+    int port = atoi(ip_port);
+    uint16_t refreshtime = atoi(refresh_time);
+    logger_set_parameters(serialno, ip_address, port );
+    ime_inverter_set_refresh_time(refreshtime);
     return IME_RETURN_CODE_OK;
 }
-
 
 
 int config_SetServicePar( const char *ip_port, const char *startup )
@@ -67,10 +59,10 @@ int config_ReadFile(void)
 
     struct Config Lista[IME_CONFIG_KEY_END_LIST];
     
-    Lista[SOFAR_CONFIG_KEY_LOGGER_SN].key    = "logger_sn";
-    Lista[SOFAR_CONFIG_KEY_LOGGER_IPADD].key = "ip_addr";
-    Lista[SOFAR_CONFIG_KEY_LOGGER_PORT].key  = "port";
-    Lista[SOFAR_CONFIG_KEY_REFRESH_TIME].key = "refresh_time";
+    Lista[CONFIG_KEY_LOGGER_SN].key    = "logger_sn";
+    Lista[CONFIG_KEY_LOGGER_IPADD].key = "ip_addr";
+    Lista[CONFIG_KEY_LOGGER_PORT].key  = "port";
+    Lista[CONFIG_KEY_REFRESH_TIME].key = "refresh_time";
     Lista[CONFIG_KEY_SERVICE_PORT].key = "service_port";
     Lista[CONFIG_KEY_START_PARAM].key  = "service_param";
     ConfigClearValue(&Lista, IME_CONFIG_KEY_END_LIST);
@@ -82,15 +74,12 @@ int config_ReadFile(void)
         return EXIT_FAILURE;
     }
  
-    /* Sofar Logger parameters
-     * sn connection addres and port,
+    /* Logger parameters 
      */
-    cerr = config_SetSofarPar(Lista[SOFAR_CONFIG_KEY_LOGGER_SN].value,
-                              Lista[SOFAR_CONFIG_KEY_LOGGER_IPADD].value,
-                              Lista[SOFAR_CONFIG_KEY_LOGGER_PORT].value,
-                              Lista[SOFAR_CONFIG_KEY_REFRESH_TIME].value);
-    if(cerr) return cerr;
-
+    config_SetLoggerPar(Lista[CONFIG_KEY_LOGGER_SN].value,
+                        Lista[CONFIG_KEY_LOGGER_IPADD].value,
+                        Lista[CONFIG_KEY_LOGGER_PORT].value,
+                        Lista[CONFIG_KEY_REFRESH_TIME].value);
 
     /* Service initialize
      * port, refresh time

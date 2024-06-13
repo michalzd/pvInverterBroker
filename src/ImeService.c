@@ -2,7 +2,7 @@
  ============================================================================
  Name        : ImeService.c
  Author      : mimi
- Version     : 01.2003
+ Version     : 02.2023
  Copyright   : GNU GENERAL PUBLIC LICENSE
  Description : wątek servisu  
  ============================================================================

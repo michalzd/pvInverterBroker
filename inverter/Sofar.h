@@ -1,6 +1,6 @@
 /*
  ============================================================================
- Name        : LoggerSofar.c
+ Name        : LoggerSofar.h
  Author      : mimi
  Version     : 01.2003
  Copyright   : GNU GENERAL PUBLIC LICENSE

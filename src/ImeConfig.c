@@ -2,7 +2,7 @@
  ============================================================================
  Name        : ImeConfig.c
  Author      : mimi
- Version     : 01.2003
+ Version     : 01.2023
  Copyright   : GNU GENERAL PUBLIC LICENSE
  Description : odczyt parametrów brokera w pliku konfiguracyjnym
  ============================================================================

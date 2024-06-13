@@ -98,8 +98,7 @@ void  ime_inverter_thread_end()
 }
 
 
-
-
+inline
 int  ime_inverter_thread_sck()
 {
     return fd[parentsocket];

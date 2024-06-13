@@ -2,7 +2,7 @@
  ============================================================================
  Name        : ImeInverter.h
  Author      : mimi
- Version     : 01.2003
+ Version     : 02.2023
  Copyright   : GNU GENERAL PUBLIC LICENSE
  Description : komunikacja z inverterem PV
  ============================================================================

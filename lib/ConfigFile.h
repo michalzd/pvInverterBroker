@@ -1,6 +1,6 @@
 /*
  ============================================================================
- Name        : ConfigFile.c
+ Name        : ConfigFile.h
  Author      : mimi
  Version     : 01.2023
  Copyright   : GNU GENERAL PUBLIC LICENSE

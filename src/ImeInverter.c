@@ -77,7 +77,7 @@ pid_t	ime_inverter_thread_create()
     socketpair(PF_LOCAL, SOCK_STREAM, 0, fd);
     if(fd[parentsocket]==0) return(-2);
 
-    //stackTop = threadStack + THREAD_STACK_SIZE-1;  /* Assume stack grows downward */
+    //stackTop = threadStack + THREAD_STACK_SIZE-1;  
     uint8_t *stack;                    /* Start of stack buffer */
     stack = malloc(THREAD_STACK_SIZE);
     if (stack == NULL) return 0;

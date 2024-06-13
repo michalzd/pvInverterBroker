@@ -168,7 +168,6 @@ int logger_sofar_SendRequest(const ModBus_Request_t * modbusrequest)
 
 	// Logger Header
 	// A5 1700 1045
-	// 00 00 3f 52 df 8c
 	requestframe.start = 0xA5;
 	requestframe.framelen[0] = 0x17;
 	requestframe.framelen[1] = 00;

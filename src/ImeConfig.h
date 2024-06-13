@@ -2,7 +2,7 @@
  ============================================================================
  Name        : ImeConfig.h
  Author      : mimi
- Version     : 01.2003
+ Version     : 01.2023
  Copyright   : GNU GENERAL PUBLIC LICENSE
  Description : parametry w pliku konfiguracyjnym
  ============================================================================

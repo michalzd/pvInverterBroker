@@ -131,7 +131,7 @@ int ime_inverter_thread( void *none)
 static
 int ime_inverter_msg_send()
 {
-    struct ServiceResponseInverterInfo info;
+    struct InverterInfo info;
     
     info.InverterState.tmsec = inverterState.tmsec;
     info.InverterState.tmmin = inverterState.tmmin;
@@ -155,5 +155,5 @@ int ime_inverter_msg_send()
     info.Grid.maxphase = gridState.maxphase;
     info.Grid.phaseOverV = gridState.phaseOverV;
      
-    return write(inverter_thread_sck, &info, sizeof(struct ServiceResponseInverterInfo) );
+    return write(inverter_thread_sck, &info, sizeof(struct InverterInfo) );
 }

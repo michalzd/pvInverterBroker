@@ -1,4 +1,4 @@
 
 # Environment variable
-# do kompilacji dod OpenWrt LEDE
+# for cross-compilling OpenWrt LEDE
 # export STAGING_DIR=/sdk/lede.sdk/staging_dir

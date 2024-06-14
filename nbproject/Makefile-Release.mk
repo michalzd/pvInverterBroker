@@ -35,12 +35,13 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/inverter/Logger.o \
+	${OBJECTDIR}/inverter/Sofar.o \
 	${OBJECTDIR}/lib/ConfigFile.o \
 	${OBJECTDIR}/lib/ModbusAdu.o \
 	${OBJECTDIR}/src/ImeConfig.o \
 	${OBJECTDIR}/src/ImeInverter.o \
 	${OBJECTDIR}/src/ImeService.o \
-	${OBJECTDIR}/src/LoggerSofar.o \
 	${OBJECTDIR}/src/main.o
 
 
@@ -68,40 +69,45 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/inverterbroker: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/inverterbroker ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/inverter/Logger.o: inverter/Logger.c
+	${MKDIR} -p ${OBJECTDIR}/inverter
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -I./include -I./src -I./lib -I./inverter -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/inverter/Logger.o inverter/Logger.c
+
+${OBJECTDIR}/inverter/Sofar.o: inverter/Sofar.c
+	${MKDIR} -p ${OBJECTDIR}/inverter
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -I./include -I./src -I./lib -I./inverter -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/inverter/Sofar.o inverter/Sofar.c
+
 ${OBJECTDIR}/lib/ConfigFile.o: lib/ConfigFile.c
 	${MKDIR} -p ${OBJECTDIR}/lib
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/ConfigFile.o lib/ConfigFile.c
+	$(COMPILE.c) -O2 -I./include -I./src -I./lib -I./inverter -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/ConfigFile.o lib/ConfigFile.c
 
 ${OBJECTDIR}/lib/ModbusAdu.o: lib/ModbusAdu.c
 	${MKDIR} -p ${OBJECTDIR}/lib
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/ModbusAdu.o lib/ModbusAdu.c
+	$(COMPILE.c) -O2 -I./include -I./src -I./lib -I./inverter -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/lib/ModbusAdu.o lib/ModbusAdu.c
 
 ${OBJECTDIR}/src/ImeConfig.o: src/ImeConfig.c
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ImeConfig.o src/ImeConfig.c
+	$(COMPILE.c) -O2 -I./include -I./src -I./lib -I./inverter -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ImeConfig.o src/ImeConfig.c
 
 ${OBJECTDIR}/src/ImeInverter.o: src/ImeInverter.c
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ImeInverter.o src/ImeInverter.c
+	$(COMPILE.c) -O2 -I./include -I./src -I./lib -I./inverter -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ImeInverter.o src/ImeInverter.c
 
 ${OBJECTDIR}/src/ImeService.o: src/ImeService.c
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ImeService.o src/ImeService.c
-
-${OBJECTDIR}/src/LoggerSofar.o: src/LoggerSofar.c
-	${MKDIR} -p ${OBJECTDIR}/src
-	${RM} "$@.d"
-	$(COMPILE.c) -O2 -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/LoggerSofar.o src/LoggerSofar.c
+	$(COMPILE.c) -O2 -I./include -I./src -I./lib -I./inverter -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/ImeService.o src/ImeService.c
 
 ${OBJECTDIR}/src/main.o: src/main.c
 	${MKDIR} -p ${OBJECTDIR}/src
 	${RM} "$@.d"
-	$(COMPILE.c) -O2 -I./include -I./src -I./lib -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/main.o src/main.c
+	$(COMPILE.c) -O2 -I./include -I./src -I./lib -I./inverter -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/src/main.o src/main.c
 
 # Subprojects
 .build-subprojects:

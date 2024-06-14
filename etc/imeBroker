@@ -1,0 +1,10 @@
+# Sofar Logger 
+logger_sn	  2363445823
+ip_addr		192.168.10.70
+port		8899
+
+# refresh time in sec
+refresh_time	30
+
+# broker udp port 
+service_port	8898

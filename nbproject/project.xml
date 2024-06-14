@@ -13,6 +13,7 @@
                 <sourceRootElem>lib</sourceRootElem>
                 <sourceRootElem>src</sourceRootElem>
                 <sourceRootElem>include</sourceRootElem>
+                <sourceRootElem>inverter</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>

@@ -16,36 +16,42 @@
 /*
  * typ i struktury przekazywane w komunikatach
  */
-enum RequestType
+enum BrokerRequestType
 {
-	RequestTypeInverterInfoJson = 0,		// na razie nie obsługiwane
-	RequestTypeInverterInfo,
-	RequestTypeSetListener,
-	RequestTypeInverterState,
-	RequestTypeGridState
+    BrokerRequestTypeUndefined = 0,
+    BrokerRequestTypeInverterInfoJson,  
+    BrokerRequestTypeInverterInfo,
+    BrokerRequestTypeSetListener,
+    BrokerRequestTypeInverterState,
+    BrokerRequestTypeGridState,
+    BrokerRequestTypeEnd
 };
 
 
-enum InverterInfoListener
+enum BrokerListener
 {
-	InverterInfoListenerUnregister = 0,
-	ControllerListenerUnregister,
-	InverterInfoListenerRegister,
-	ControllerListenerRegister
+	BrokerListenerUnregister = 0,
+	BrokerListenerRegister 
 };
 
 
-struct ServiceRequestInfo
+struct BrokerRequestInfo
 {
 	uint8_t RequestType;
 	uint8_t Modul;
 };
 
-struct ServiceRequestInverterInfoListener
+struct BrokerRequestInfoListener
 {
 	uint8_t RequestType;
 	uint8_t RegisterListener;
 };
+
+struct BrokerResponseHello
+{
+	uint8_t ResponseType;
+	char    hello[6];
+};  
 
 
 enum InverterStateEnum
@@ -104,7 +110,7 @@ struct Grid
 
 
 
-struct ServiceResponseInverterInfo
+struct InverterInfo
 {
 	struct  Inverter 	InverterState;
 	struct  InverterPV	PV1;

@@ -16,6 +16,12 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <logicalFolder name="f1" displayName="inverter" projectFiles="true">
+        <itemPath>inverter/Logger.c</itemPath>
+        <itemPath>inverter/Logger.h</itemPath>
+        <itemPath>inverter/Sofar.c</itemPath>
+        <itemPath>inverter/Sofar.h</itemPath>
+      </logicalFolder>
       <logicalFolder name="lib" displayName="lib" projectFiles="true">
         <itemPath>lib/ConfigFile.c</itemPath>
         <itemPath>lib/ConfigFile.h</itemPath>
@@ -29,8 +35,6 @@
         <itemPath>src/ImeInverter.h</itemPath>
         <itemPath>src/ImeService.c</itemPath>
         <itemPath>src/ImeService.h</itemPath>
-        <itemPath>src/LoggerSofar.c</itemPath>
-        <itemPath>src/LoggerSofar.h</itemPath>
         <itemPath>src/main.c</itemPath>
       </logicalFolder>
     </logicalFolder>
@@ -53,6 +57,7 @@
     <Elem>lib</Elem>
     <Elem>src</Elem>
     <Elem>include</Elem>
+    <Elem>inverter</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -68,6 +73,7 @@
             <pElem>./include</pElem>
             <pElem>./src</pElem>
             <pElem>./lib</pElem>
+            <pElem>./inverter</pElem>
           </incDir>
           <preprocessorList>
             <Elem>PARAM_SERVICE_DEBUG_INFO</Elem>
@@ -77,6 +83,14 @@
       <item path="include/BrokerService.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="include/Ime.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="inverter/Logger.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="inverter/Logger.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="inverter/Sofar.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="inverter/Sofar.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lib/ConfigFile.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -97,10 +111,6 @@
       <item path="src/ImeService.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ImeService.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/LoggerSofar.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/LoggerSofar.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -118,6 +128,7 @@
             <pElem>./include</pElem>
             <pElem>./src</pElem>
             <pElem>./lib</pElem>
+            <pElem>./inverter</pElem>
           </incDir>
         </cTool>
         <ccTool>
@@ -133,6 +144,14 @@
       <item path="include/BrokerService.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="include/Ime.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="inverter/Logger.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="inverter/Logger.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="inverter/Sofar.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="inverter/Sofar.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="lib/ConfigFile.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -153,10 +172,6 @@
       <item path="src/ImeService.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="src/ImeService.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="src/LoggerSofar.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="src/LoggerSofar.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
       </item>

@@ -38,13 +38,10 @@ static uint8_t	srvbuffer[SRV_BUFFER_SIZE];
 static volatile int Listerer_sck = 0;
 static struct sockaddr_in Listener;
 
-static volatile int Controller_sck = 0;
-static struct sockaddr_in Controller;
-
 
 /* message from inverter logger 
  */
-struct ServiceResponseInverterInfo inverterInfo;
+struct InverterInfo inverterInfo;
 
 static int ime_service_logger_msg(int sck);
 static int ime_service_request(int sck); 
@@ -165,7 +162,7 @@ static
 int ime_service_logger_msg(int sck)
 {
     static uint8_t lastmin=0;
-    int n = recv(sck, &inverterInfo, sizeof(struct ServiceResponseInverterInfo), 0);
+    int n = recv(sck, &inverterInfo, sizeof(struct InverterInfo), 0);
     
     if(print_debug_info)
     {
@@ -197,41 +194,31 @@ int ime_service_logger_msg(int sck)
 static
 int ime_service_request_Listener(int sck, const struct sockaddr_in *si_sender, const socklen_t slen, void * request)
 {
-    struct ServiceRequestInverterInfoListener *listenerinfo = request;
+    struct BrokerRequestInfoListener *listenerinfo = request;
     char buf[16];
 
     switch(listenerinfo->RegisterListener)
     {
-      case InverterInfoListenerUnregister:
+      case BrokerListenerUnregister:
               bzero( (void*)&Listener, sizeof(Listener));
               Listerer_sck = 0;
               break;
-      case InverterInfoListenerRegister:
+      case BrokerListenerRegister:
               memcpy( (void*)&Listener, si_sender, sizeof(Listener) );
               Listerer_sck = sck;
               inet_ntop(AF_INET, &(Listener.sin_addr), buf, 20);
               syslog (LOG_INFO, "ImeBroker: Listener:%s", buf);
               break;
-      case ControllerListenerUnregister:
-              bzero( (void*)&Controller, sizeof(Controller));
-              Controller_sck = 0;
-              break;
-      case ControllerListenerRegister:
-              memcpy( (void*)&Controller, si_sender, sizeof(Controller) );
-              Controller_sck = sck;
-              inet_ntop(AF_INET, &(Controller.sin_addr), buf, 20);
-              syslog (LOG_INFO, "ImeBroker: Controller:%s", buf);
-              break;
     }
 
-    sendto(sck, listenerinfo, sizeof(struct ServiceRequestInverterInfoListener), 0, (const struct sockaddr *) si_sender, slen);
+    sendto(sck, listenerinfo, sizeof(struct BrokerRequestInfoListener), 0, (const struct sockaddr *) si_sender, slen);
     return IME_RETURN_CODE_OK;
 }
 
 static
 int ime_service_request_InverterInfo(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
-    sendto(sck, &inverterInfo, sizeof(struct ServiceResponseInverterInfo), 0, (const struct sockaddr *) si_sender, slen);
+    sendto(sck, &inverterInfo, sizeof(struct InverterInfo), 0, (const struct sockaddr *) si_sender, slen);
     return IME_RETURN_CODE_OK;
 }
 
@@ -254,8 +241,7 @@ int ime_service_request_GridState(int sck, const struct sockaddr_in *si_sender, 
 static
 int ime_service_send_InverterInfo()
 {
-    if(Listerer_sck>0)   ime_service_request_InverterInfo(Listerer_sck, &Listener, sizeof(Listener) );
-    if(Controller_sck>0) ime_service_request_InverterInfo(Controller_sck, &Controller, sizeof(Controller) );
+    if(Listerer_sck>0)   ime_service_request_InverterInfo(Listerer_sck, &Listener, sizeof(Listener) ); 
     return IME_RETURN_CODE_OK;
 }
 
@@ -280,8 +266,10 @@ int ime_service_request_InfoJson(int sck, const struct sockaddr_in *si_sender, c
 static
 int ime_service_request_default(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
-    char *hello = "Hello";
-    sendto(sck, (const char *)hello, strlen(hello),  0, (const struct sockaddr *) si_sender, slen);
+    struct BrokerResponseHello response;
+    response.ResponseType = BrokerRequestTypeUndefined;
+    strcpy( response.hello, "Hello");
+    sendto(sck, &response, sizeof(struct BrokerResponseHello),  0, (const struct sockaddr *) si_sender, slen);
     return IME_RETURN_CODE_OK;
 }
 
@@ -294,7 +282,7 @@ int ime_service_request(int sck)
 {
     int n;
     struct sockaddr_in si_sender;
-    struct ServiceRequestInfo *request;
+    struct BrokerRequestInfo *request;
 
     socklen_t  slen = sizeof(si_sender);
 
@@ -305,22 +293,22 @@ int ime_service_request(int sck)
     if (n == -1) return 0;
     srvbuffer[SRV_BUFFER_SIZE-1] = 0;
 
-    request = (struct ServiceRequestInfo *) srvbuffer;
+    request = (struct BrokerRequestInfo *) srvbuffer;
     switch(request->RequestType)
     {
-        case RequestTypeInverterInfo:
+        case BrokerRequestTypeInverterInfo:
                 ime_service_request_InverterInfo(sck, &si_sender, slen);
                 break;
-        case RequestTypeSetListener:
+        case BrokerRequestTypeSetListener:
                 ime_service_request_Listener(sck, &si_sender, slen, request);
                 break;
-        case RequestTypeInverterState:
+        case BrokerRequestTypeInverterState:
                 ime_service_request_InverterState(sck, &si_sender, slen);
                 break;
-        case RequestTypeGridState:
+        case BrokerRequestTypeGridState:
                 ime_service_request_GridState(sck, &si_sender, slen);
                 break;
-        case RequestTypeInverterInfoJson:
+        case BrokerRequestTypeInverterInfoJson:
                 ime_service_request_InfoJson(sck, &si_sender, slen);
                 break;
         default:

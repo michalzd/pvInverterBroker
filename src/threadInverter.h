@@ -21,11 +21,11 @@ enum SocketPair {
     childsocket = 1
 };
 
-int     ime_inverter_init(); 
-void    ime_inverter_set_refresh_time(uint16_t rtime);
-int     ime_inverter_thread_sck();
-pid_t	ime_inverter_thread_create();
-int     ime_inverter_thread( void *none);
-void    ime_inverter_thread_end();
+int     thread_inverter_init(); 
+void    thread_inverter_set_refresh_time(uint16_t rtime);
+int     thread_inverter_get_sck();
+pid_t	thread_inverter_create();
+int     thread_inverter_thread( void *none);
+void    thread_inverter_end();
 
 #endif /* IMEINVERTERER_H_ */

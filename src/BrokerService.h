@@ -8,19 +8,13 @@
  ============================================================================
  */
 
-#ifndef IMESERVICE_H_
-#define IMESERVICE_H_
+#ifndef BROKERSERVICE_H_
+#define BROKERSERVICE_H_
 
-/*
- * threads run
- */
-extern volatile int run;
-extern uint8_t  print_debug_info;
+int  broker_service_start();
+void broker_service_stop();
 
-int ime_service_start();
-void ime_service_stop();
-
-int ime_service_thread();
+int  broker_service_thread();
 
 
-#endif /* IMESERVICE_H_ */
+#endif /* BROKERSERVICE_H_ */

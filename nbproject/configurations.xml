@@ -29,19 +29,25 @@
         <itemPath>lib/ModbusAdu.h</itemPath>
       </logicalFolder>
       <logicalFolder name="src" displayName="src" projectFiles="true">
-        <itemPath>src/ImeConfig.c</itemPath>
-        <itemPath>src/ImeConfig.h</itemPath>
-        <itemPath>src/ImeInverter.c</itemPath>
-        <itemPath>src/ImeInverter.h</itemPath>
-        <itemPath>src/ImeService.c</itemPath>
-        <itemPath>src/ImeService.h</itemPath>
+        <itemPath>src/BrokerService.c</itemPath>
+        <itemPath>src/BrokerService.h</itemPath>
+        <itemPath>src/Config.c</itemPath>
+        <itemPath>src/Config.h</itemPath>
+        <itemPath>src/MqttService.c</itemPath>
+        <itemPath>src/MqttService.h</itemPath>
+        <itemPath>src/Service.h</itemPath>
         <itemPath>src/main.c</itemPath>
+        <itemPath>src/threadInverter.c</itemPath>
+        <itemPath>src/threadInverter.h</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
                    projectFiles="false"
                    kind="TEST_LOGICAL_FOLDER">
+      <logicalFolder name="f1" displayName="mqttTest" projectFiles="true" kind="TEST">
+        <itemPath>lib/tests/mqtttest.c</itemPath>
+      </logicalFolder>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -79,7 +85,25 @@
             <Elem>PARAM_SERVICE_DEBUG_INFO</Elem>
           </preprocessorList>
         </cTool>
+        <linkerTool>
+          <commandLine>-lmqtt</commandLine>
+        </linkerTool>
       </compileType>
+      <folder path="TestFiles/f1">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f1</output>
+        </linkerTool>
+      </folder>
       <item path="include/BrokerService.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="include/Ime.h" ex="false" tool="3" flavor2="0">
@@ -100,19 +124,27 @@
       </item>
       <item path="lib/ModbusAdu.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ImeConfig.c" ex="false" tool="0" flavor2="0">
+      <item path="lib/tests/mqtttest.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ImeConfig.h" ex="false" tool="3" flavor2="0">
+      <item path="src/BrokerService.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ImeInverter.c" ex="false" tool="0" flavor2="0">
+      <item path="src/BrokerService.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ImeInverter.h" ex="false" tool="3" flavor2="0">
+      <item path="src/Config.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ImeService.c" ex="false" tool="0" flavor2="0">
+      <item path="src/Config.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ImeService.h" ex="false" tool="3" flavor2="0">
+      <item path="src/MqttService.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/MqttService.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/Service.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/threadInverter.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/threadInverter.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
     <conf name="Release" type="1">
@@ -140,7 +172,25 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <commandLine>-lmqtt</commandLine>
+        </linkerTool>
       </compileType>
+      <folder path="TestFiles/f1">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+        <linkerTool>
+          <output>${TESTDIR}/TestFiles/f1</output>
+        </linkerTool>
+      </folder>
       <item path="include/BrokerService.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="include/Ime.h" ex="false" tool="3" flavor2="0">
@@ -161,19 +211,27 @@
       </item>
       <item path="lib/ModbusAdu.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ImeConfig.c" ex="false" tool="0" flavor2="0">
+      <item path="lib/tests/mqtttest.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ImeConfig.h" ex="false" tool="3" flavor2="0">
+      <item path="src/BrokerService.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ImeInverter.c" ex="false" tool="0" flavor2="0">
+      <item path="src/BrokerService.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ImeInverter.h" ex="false" tool="3" flavor2="0">
+      <item path="src/Config.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="src/ImeService.c" ex="false" tool="0" flavor2="0">
+      <item path="src/Config.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="src/ImeService.h" ex="false" tool="3" flavor2="0">
+      <item path="src/MqttService.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/MqttService.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="src/Service.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="src/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/threadInverter.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="src/threadInverter.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

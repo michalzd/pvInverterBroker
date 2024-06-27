@@ -28,9 +28,10 @@
 #include <poll.h>
 
 #include "Ime.h"
-#include "ImeInverter.h"
-#include "ImeService.h"
-#include "ImeConfig.h"
+#include "Service.h"
+#include "threadInverter.h"
+#include "BrokerService.h"
+#include "Config.h"
 #include "Logger.h"
 
 volatile struct Inverter  inverterState;
@@ -55,21 +56,22 @@ volatile int refreshtimer;
 
 static int ime_inverter_msg_send();
 
-int ime_inverter_init()
+int thread_inverter_init()
 {
 	inverterState.state = InverterStateInit;
 	inverterState.activepower = 0;
+        refresh_time = 30;
 	return logger_clear_data();
 }
 
 
-void ime_inverter_set_refresh_time(uint16_t rtime)
+void thread_inverter_set_refresh_time(uint16_t rtime)
 {
     refresh_time = rtime;
 }
 
 
-pid_t	ime_inverter_thread_create()
+pid_t	thread_inverter_create()
 {
     int   flags;
     uint8_t *stackTop;                 /* End of stack buffer */
@@ -84,13 +86,13 @@ pid_t	ime_inverter_thread_create()
     stackTop = stack + THREAD_STACK_SIZE;
 
     flags = CLONE_VM | CLONE_SIGHAND;
-    inverter_thread_pid = clone( &ime_inverter_thread, stackTop, flags, (void*) NULL );
+    inverter_thread_pid = clone( &thread_inverter_thread, stackTop, flags, (void*) NULL );
     inverter_thread_sck = fd[childsocket];
     return inverter_thread_pid;
 }
 
 
-void  ime_inverter_thread_end()
+void  thread_inverter_end()
 {
     waitpid(inverter_thread_pid, NULL, __WCLONE);    /* Wait for child thread */
     if(fd[childsocket]) close(fd[childsocket]);
@@ -99,12 +101,12 @@ void  ime_inverter_thread_end()
 
 
 inline
-int  ime_inverter_thread_sck()
+int  thread_inverter_get_sck()
 {
     return fd[parentsocket];
 }
 
-int ime_inverter_thread( void *none)
+int thread_inverter_thread( void *none)
 {
     struct pollfd poolfd;
     int ret; 
@@ -114,7 +116,7 @@ int ime_inverter_thread( void *none)
     {
         poolfd.fd = inverter_thread_sck;
 	poolfd.events = POLLIN;
-	ret = poll(&poolfd, 1, 15000); // 15 second for timeout
+	ret = poll(&poolfd, 1, 15000); // 15 second for timeout, poniżej inwerter nie wyrabiał
 	
         refreshtimer+=15;
         if(run && refreshtimer >= refresh_time )

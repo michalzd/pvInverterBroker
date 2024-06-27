@@ -22,9 +22,11 @@
 #include <time.h>
 #include <string.h>
 #include "Ime.h"
-#include "ImeInverter.h"
-#include "ImeService.h"
-#include "ImeConfig.h" 
+#include "Service.h"
+#include "threadInverter.h"
+#include "BrokerService.h"
+#include "MqttService.h"
+#include "Config.h" 
 
 #define  SRV_BUFFER_SIZE 255
 static int   srvsocket;
@@ -43,15 +45,15 @@ static struct sockaddr_in Listener;
  */
 struct InverterInfo inverterInfo;
 
-static int ime_service_logger_msg(int sck);
-static int ime_service_request(int sck); 
-static int ime_service_send_InverterInfo();
+static int broker_service_logger_msg(int sck);
+static int broker_service_request(int sck); 
+static int service_send_InverterInfo();
 
 /*
  * open UDP socket as server
  */
 static
-int	ime_service_socket_open(uint16_t sck_port )
+int broker_service_socket_open(uint16_t sck_port )
 {
     struct sockaddr_in sckaddr;
     socklen_t	rlen;
@@ -76,41 +78,45 @@ int	ime_service_socket_open(uint16_t sck_port )
 }
 
 
-int  ime_service_start()
+int broker_service_start()
 {
     register int s = 0;
 
     srvsocket = 0;
-    s = ime_service_socket_open(service.port);
+    s = broker_service_socket_open(config.service.port);
     if(s<=0) {
         syslog (LOG_ERR, "InverterBroker: socket error: %i", errno );
         if(print_debug_info)
         {
-            printf("InverterBroker port %i error ", service.port);
+            printf("InverterBroker port %i error ", config.service.port);
             puts("");
         }
         return IME_RETURN_ERR_SOCK;
     }
-    syslog (LOG_INFO, "InverterBroker: socket port: %i", service.port ); 
+    syslog (LOG_INFO, "InverterBroker: socket port: %i", config.service.port ); 
     if(print_debug_info)
     {
-        printf("InverterBroker port %i ", service.port);
+        printf("InverterBroker port %i ", config.service.port);
         puts("");
     }
     srvsocket = s;
-    loggersocket = ime_inverter_thread_sck();
+    loggersocket = thread_inverter_get_sck();
+    
+    mqtt_service_init();
+    mqtt_service_connect();
     
     return IME_RETURN_CODE_OK;
 }
 
 
-void ime_service_stop()
+void broker_service_stop()
 {
     if(srvsocket) close(srvsocket);
+    mqtt_service_disconnect();
 }
 
 static
-void  ime_service_fdset(fd_set *socketset, int fd)
+void  service_fdset(fd_set *socketset, int fd)
 {
     if(maxsckid < fd) maxsckid = fd;
     if(fd>0) 
@@ -119,7 +125,7 @@ void  ime_service_fdset(fd_set *socketset, int fd)
     }
 }
 
-int ime_service_thread()
+int broker_service_thread()
 {
     int 	v=0;
     int		sck;
@@ -128,10 +134,9 @@ int ime_service_thread()
 
     FD_ZERO(&sckset);
     FD_SET (srvsocket,  &sckset);
-    ime_service_fdset(&sckset, srvsocket );
-    ime_service_fdset(&sckset, loggersocket );  
-    
-   
+    service_fdset(&sckset, srvsocket );
+    service_fdset(&sckset, loggersocket );  
+     
     if(maxsckid)
     {
         // set timer
@@ -142,15 +147,15 @@ int ime_service_thread()
         if (v == 0)
         {
             refreshtimer++; // timeout, można coś zrobić dodatkowego
+            mqtt_service_keep_alive();
         }
         if (v > 0)
         {
             sck = loggersocket;
-            if (sck && FD_ISSET(sck, &sckset) ) ime_service_logger_msg(sck);
+            if (sck && FD_ISSET(sck, &sckset) ) broker_service_logger_msg(sck);
             
             sck = srvsocket;
-            if (sck && FD_ISSET(sck, &sckset) ) ime_service_request(sck);
-
+            if (sck && FD_ISSET(sck, &sckset) ) broker_service_request(sck);
         }
 
     }
@@ -159,7 +164,7 @@ int ime_service_thread()
 }
 
 static 
-int ime_service_logger_msg(int sck)
+int broker_service_logger_msg(int sck)
 {
     static uint8_t lastmin=0;
     int n = recv(sck, &inverterInfo, sizeof(struct InverterInfo), 0);
@@ -180,11 +185,14 @@ int ime_service_logger_msg(int sck)
        puts("");
     }
     
+    mqtt_service_publish();
+    
+    
     /* raz na minutę wysyłam info do zalogowanego nasłuchu
      */
     if(n && (lastmin != inverterInfo.InverterState.tmmin) ) 
     {
-        ime_service_send_InverterInfo();
+        service_send_InverterInfo();
         lastmin = inverterInfo.InverterState.tmmin;
     }
     return n;
@@ -192,7 +200,7 @@ int ime_service_logger_msg(int sck)
 
 
 static
-int ime_service_request_Listener(int sck, const struct sockaddr_in *si_sender, const socklen_t slen, void * request)
+int service_request_Listener(int sck, const struct sockaddr_in *si_sender, const socklen_t slen, void * request)
 {
     struct BrokerRequestInfoListener *listenerinfo = request;
     char buf[16];
@@ -216,14 +224,14 @@ int ime_service_request_Listener(int sck, const struct sockaddr_in *si_sender, c
 }
 
 static
-int ime_service_request_InverterInfo(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
+int service_request_InverterInfo(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     sendto(sck, &inverterInfo, sizeof(struct InverterInfo), 0, (const struct sockaddr *) si_sender, slen);
     return IME_RETURN_CODE_OK;
 }
 
 static
-int ime_service_request_InverterState(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
+int service_request_InverterState(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     struct  Inverter *inverterState = &(inverterInfo.InverterState);
     sendto(sck, inverterState, sizeof(struct Inverter), 0, (const struct sockaddr *) si_sender, slen);
@@ -231,7 +239,7 @@ int ime_service_request_InverterState(int sck, const struct sockaddr_in *si_send
 }
 
 static 
-int ime_service_request_GridState(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
+int service_request_GridState(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     struct  Grid *gridState = &(inverterInfo.Grid);
     sendto(sck, gridState, sizeof(struct Grid), 0, (const struct sockaddr *) si_sender, slen);
@@ -239,15 +247,15 @@ int ime_service_request_GridState(int sck, const struct sockaddr_in *si_sender, 
 }
 
 static
-int ime_service_send_InverterInfo()
+int service_send_InverterInfo()
 {
-    if(Listerer_sck>0)   ime_service_request_InverterInfo(Listerer_sck, &Listener, sizeof(Listener) ); 
+    if(Listerer_sck>0)   service_request_InverterInfo(Listerer_sck, &Listener, sizeof(Listener) ); 
     return IME_RETURN_CODE_OK;
 }
 
 
 static
-int ime_service_request_InfoJson(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
+int service_request_InfoJson(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
 #define MSGINFOMAXSIZE 256
     char msginfo [MSGINFOMAXSIZE];  
@@ -264,7 +272,7 @@ int ime_service_request_InfoJson(int sck, const struct sockaddr_in *si_sender, c
 
 
 static
-int ime_service_request_default(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
+int service_request_default(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     struct BrokerResponseHello response;
     response.ResponseType = BrokerRequestTypeUndefined;
@@ -278,7 +286,7 @@ int ime_service_request_default(int sck, const struct sockaddr_in *si_sender, co
  * receive request
  */
 static
-int ime_service_request(int sck)
+int broker_service_request(int sck)
 {
     int n;
     struct sockaddr_in si_sender;
@@ -297,22 +305,22 @@ int ime_service_request(int sck)
     switch(request->RequestType)
     {
         case BrokerRequestTypeInverterInfo:
-                ime_service_request_InverterInfo(sck, &si_sender, slen);
+                service_request_InverterInfo(sck, &si_sender, slen);
                 break;
         case BrokerRequestTypeSetListener:
-                ime_service_request_Listener(sck, &si_sender, slen, request);
+                service_request_Listener(sck, &si_sender, slen, request);
                 break;
         case BrokerRequestTypeInverterState:
-                ime_service_request_InverterState(sck, &si_sender, slen);
+                service_request_InverterState(sck, &si_sender, slen);
                 break;
         case BrokerRequestTypeGridState:
-                ime_service_request_GridState(sck, &si_sender, slen);
+                service_request_GridState(sck, &si_sender, slen);
                 break;
         case BrokerRequestTypeInverterInfoJson:
-                ime_service_request_InfoJson(sck, &si_sender, slen);
+                service_request_InfoJson(sck, &si_sender, slen);
                 break;
         default:
-                ime_service_request_default(sck, &si_sender, slen);
+                service_request_default(sck, &si_sender, slen);
     }
     bzero(srvbuffer, SRV_BUFFER_SIZE);
 

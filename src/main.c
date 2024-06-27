@@ -22,9 +22,9 @@
 #include <netdb.h>
 
 #include "Ime.h" 
-#include "ImeInverter.h"
-#include "ImeConfig.h"
-#include "ImeService.h"
+#include "threadInverter.h"
+#include "Config.h"
+#include "BrokerService.h"
 
 volatile int run = 1;
 uint8_t  print_debug_info;
@@ -38,12 +38,12 @@ void signal_term(int signal)
 
 int main(int argc, char**argv) {
 
-    int retval, v;
+    int rc;
     print_debug_info = 0;
     
     if(argc>1)
     {
-        if(strstr(argv[1],"-d"))     print_debug_info = 2;
+        if(strstr(argv[1],"-d"))     print_debug_info = 2; 
     }
     
     openlog("slog", LOG_PID|LOG_CONS, LOG_USER);
@@ -51,11 +51,10 @@ int main(int argc, char**argv) {
     signal(SIGINT, signal_term);
     signal(SIGTERM, signal_term);
     
-    ime_inverter_init();
+    thread_inverter_init();
     
-    retval = config_ReadFile();
-    
-    if(retval !=IME_RETURN_CODE_OK) {
+    rc = config_ReadFile();
+    if(rc !=IME_RETURN_CODE_OK) {
         closelog();
         return EXIT_FAILURE;
     }
@@ -63,19 +62,19 @@ int main(int argc, char**argv) {
     syslog (LOG_INFO, "InverterBroker Start");
     if(print_debug_info) puts("InverterBroker Start");
 
-    ime_inverter_thread_create();
-    ime_service_start();
-
+    thread_inverter_create();
+    broker_service_start();
+    
     while(run)
     {
-        v = ime_service_thread();
-        if(v==IME_RETURN_CODE_QUIT) break;
-        if(v==IME_RETURN_ERR_ERROR) break;
+        rc = broker_service_thread();
+        if(rc==IME_RETURN_CODE_QUIT) break;
+        if(rc==IME_RETURN_ERR_ERROR) break;
     }
 
     run = 0;
-    ime_service_stop();
-    ime_inverter_thread_end();
+    broker_service_stop();
+    thread_inverter_end();
     
     syslog (LOG_INFO, "InverterBroker Stop");
     closelog();

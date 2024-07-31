@@ -21,7 +21,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <string.h>
-#include "Ime.h"
+#include "retcode.h"
 #include "Service.h"
 #include "threadInverter.h"
 #include "BrokerService.h"
@@ -91,7 +91,7 @@ int broker_service_start()
             printf("InverterBroker port %i error ", config.service.port);
             puts("");
         }
-        return IME_RETURN_ERR_SOCK;
+        return BS_RETURN_ERR_SOCK;
     }
     syslog (LOG_INFO, "InverterBroker: socket port: %i", config.service.port ); 
     if(print_debug_info)
@@ -105,7 +105,7 @@ int broker_service_start()
     mqtt_service_init();
     mqtt_service_connect();
     
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 
@@ -160,7 +160,7 @@ int broker_service_thread()
 
     }
 
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 static 
@@ -171,7 +171,7 @@ int broker_service_logger_msg(int sck)
     
     if(print_debug_info)
     {
-       printf(" PV State:%i Power[dekaWaty]: %i Avg: %i;  RST [decyVolty]:%i %i %i  [centyAmpery]: %i %i %i", 
+       printf(" PV State:%i Power[dekaWaty]: %i Avg: %i;  RST [decyVolty]:%i %i %i  [centyAmpery]: %i %i %i  Avg: %i %i %i", 
               inverterInfo.InverterState.state, 
               ntohs(inverterInfo.InverterState.activepower), 
               ntohs(inverterInfo.InverterState.averagepower),
@@ -180,7 +180,10 @@ int broker_service_logger_msg(int sck)
               ntohs(inverterInfo.Grid.Tvoltage),
               ntohs(inverterInfo.Grid.Rcurrent),
               ntohs(inverterInfo.Grid.Scurrent),
-              ntohs(inverterInfo.Grid.Tcurrent)
+              ntohs(inverterInfo.Grid.Tcurrent),
+              ntohs(inverterInfo.Grid.Ravgvoltage),
+              ntohs(inverterInfo.Grid.Savgvoltage),
+              ntohs(inverterInfo.Grid.Tavgvoltage)
               );
        puts("");
     }
@@ -220,14 +223,14 @@ int service_request_Listener(int sck, const struct sockaddr_in *si_sender, const
     }
 
     sendto(sck, listenerinfo, sizeof(struct BrokerRequestInfoListener), 0, (const struct sockaddr *) si_sender, slen);
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 static
 int service_request_InverterInfo(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
 {
     sendto(sck, &inverterInfo, sizeof(struct InverterInfo), 0, (const struct sockaddr *) si_sender, slen);
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 static
@@ -235,7 +238,7 @@ int service_request_InverterState(int sck, const struct sockaddr_in *si_sender, 
 {
     struct  Inverter *inverterState = &(inverterInfo.InverterState);
     sendto(sck, inverterState, sizeof(struct Inverter), 0, (const struct sockaddr *) si_sender, slen);
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 static 
@@ -243,31 +246,14 @@ int service_request_GridState(int sck, const struct sockaddr_in *si_sender, cons
 {
     struct  Grid *gridState = &(inverterInfo.Grid);
     sendto(sck, gridState, sizeof(struct Grid), 0, (const struct sockaddr *) si_sender, slen);
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 static
 int service_send_InverterInfo()
 {
     if(Listerer_sck>0)   service_request_InverterInfo(Listerer_sck, &Listener, sizeof(Listener) ); 
-    return IME_RETURN_CODE_OK;
-}
-
-
-static
-int service_request_InfoJson(int sck, const struct sockaddr_in *si_sender, const socklen_t  slen)
-{
-#define MSGINFOMAXSIZE 256
-    char msginfo [MSGINFOMAXSIZE];  
-    int  i, pos;
-    
-    pos = snprintf(msginfo, MSGINFOMAXSIZE, "{ Time:[%.2i,%.2i,%.2i,%i], Inverter:[%i,%i0,%i0,%i,%i,%i] } ",
-		inverterInfo.InverterState.tmhour, inverterInfo.InverterState.tmmin, inverterInfo.InverterState.tmsec, inverterInfo.InverterState.tmweekday,
-		inverterInfo.InverterState.state, ntohs(inverterInfo.InverterState.activepower), ntohs(inverterInfo.InverterState.averagepower), 
-                ntohs(inverterInfo.Grid.Rvoltage), ntohs(inverterInfo.Grid.Svoltage), ntohs(inverterInfo.Grid.Tvoltage) );
-   
-    sendto(sck, msginfo, strlen(msginfo), 0, (const struct sockaddr *) si_sender, slen);
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 
@@ -278,7 +264,7 @@ int service_request_default(int sck, const struct sockaddr_in *si_sender, const 
     response.ResponseType = BrokerRequestTypeUndefined;
     strcpy( response.hello, "Hello");
     sendto(sck, &response, sizeof(struct BrokerResponseHello),  0, (const struct sockaddr *) si_sender, slen);
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 
@@ -315,9 +301,6 @@ int broker_service_request(int sck)
                 break;
         case BrokerRequestTypeGridState:
                 service_request_GridState(sck, &si_sender, slen);
-                break;
-        case BrokerRequestTypeInverterInfoJson:
-                service_request_InfoJson(sck, &si_sender, slen);
                 break;
         default:
                 service_request_default(sck, &si_sender, slen);

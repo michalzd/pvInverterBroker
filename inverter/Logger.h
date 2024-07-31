@@ -16,7 +16,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include "BrokerService.h"
-#include "Ime.h"
+#include "retcode.h"
 
 #define OVERVOLTAGE_LIMIT 2530
 
@@ -38,7 +38,7 @@ void logger_set_parameters( const char *serialno, const char *ip_address, int ip
 /*
  * zeruje struktury danych
  */
-int logger_clear_data();
+void logger_clear_data();
 
 /*
  * odswiezanie danych 

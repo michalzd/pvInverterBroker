@@ -21,10 +21,10 @@
 #include <unistd.h>
 #include <netdb.h>
 
-#include "Ime.h" 
+#include "retcode.h" 
 #include "threadInverter.h"
 #include "Config.h"
-#include "BrokerService.h"
+#include "BrokerServiceThread.h"
 
 volatile int run = 1;
 uint8_t  print_debug_info;
@@ -54,7 +54,7 @@ int main(int argc, char**argv) {
     thread_inverter_init();
     
     rc = config_ReadFile();
-    if(rc !=IME_RETURN_CODE_OK) {
+    if(rc !=BS_RETURN_CODE_OK) {
         closelog();
         return EXIT_FAILURE;
     }
@@ -68,8 +68,8 @@ int main(int argc, char**argv) {
     while(run)
     {
         rc = broker_service_thread();
-        if(rc==IME_RETURN_CODE_QUIT) break;
-        if(rc==IME_RETURN_ERR_ERROR) break;
+        if(rc==BS_RETURN_CODE_QUIT) break;
+        if(rc==BS_RETURN_ERR_ERROR) break;
     }
 
     run = 0;

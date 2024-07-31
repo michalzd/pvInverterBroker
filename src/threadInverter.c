@@ -27,7 +27,7 @@
 #include <string.h>
 #include <poll.h>
 
-#include "Ime.h"
+#include "retcode.h"
 #include "Service.h"
 #include "threadInverter.h"
 #include "BrokerService.h"
@@ -56,12 +56,14 @@ volatile int refreshtimer;
 
 static int ime_inverter_msg_send();
 
+
 int thread_inverter_init()
 {
-	inverterState.state = InverterStateInit;
-	inverterState.activepower = 0;
-        refresh_time = 30;
-	return logger_clear_data();
+    inverterState.state = InverterStateInit;
+    inverterState.activepower = 0;
+    refresh_time = 30;
+    logger_clear_data();
+    return BS_RETURN_CODE_OK;    
 }
 
 
@@ -153,6 +155,9 @@ int ime_inverter_msg_send()
     info.Grid.Scurrent = htons(gridState.Scurrent);
     info.Grid.Tvoltage = htons(gridState.Tvoltage);
     info.Grid.Tcurrent = htons(gridState.Tcurrent);
+    info.Grid.Ravgvoltage = htons(gridState.Ravgvoltage); 
+    info.Grid.Savgvoltage = htons(gridState.Savgvoltage);
+    info.Grid.Tavgvoltage = htons(gridState.Tavgvoltage);
     info.Grid.voltage  = htons(gridState.voltage);
     info.Grid.maxphase = gridState.maxphase;
     info.Grid.phaseOverV = gridState.phaseOverV;

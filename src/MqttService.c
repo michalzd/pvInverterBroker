@@ -1,12 +1,13 @@
 /*
  ============================================================================
- Name        : ImeService.c
+ Name        : MqttService.c
  Author      : mimi
  Version     : 02.2023
  Copyright   : GNU GENERAL PUBLIC LICENSE
- Description : wątek servisu  
+ Description : mqtt client function
  ============================================================================
  */
+
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,7 +24,7 @@
 #include <string.h>
 #include <mqtt/MQTTClient.h>
 
-#include "Ime.h"
+#include "retcode.h"
 #include "Service.h" 
 #include "MqttService.h"
 #include "Config.h"  
@@ -36,7 +37,7 @@ struct Subtopic
     char state[SUBTOPIC_SZ];  
 };
 
-#define  SRV_BUFFER_SIZE 128
+#define  SRV_BUFFER_SIZE 256
 static uint8_t	srvbufrd[SRV_BUFFER_SIZE];
 static uint8_t	srvbufwr[SRV_BUFFER_SIZE];
 
@@ -63,10 +64,10 @@ void mqtt_service_init()
     size_t topiclen = strlen(config.mqtt.topic);
      
     strncpy(mqtt_subtopic.json, config.mqtt.topic, SUBTOPIC_SZ);
-    strcpy(mqtt_subtopic.json + topiclen, "/s/json");
+    strcpy(mqtt_subtopic.json + topiclen, "/json");
     
     strncpy(mqtt_subtopic.state, config.mqtt.topic, SUBTOPIC_SZ);
-    strcpy(mqtt_subtopic.json + topiclen, "/s/state");
+    strcpy(mqtt_subtopic.state + topiclen, "/state");
      
 }
 
@@ -128,14 +129,14 @@ int  mqtt_service_connect()
     if(config.mqtt.port == 0) 
     {
         syslog (LOG_ERR, "InverterBroker: MQTT not defined" );
-        return IME_RETURN_ERR_INADDR;
+        return BS_RETURN_ERR_INADDR;
     }
      
     rc = mqtt_connect_to_server();
-    if(rc)  return IME_RETURN_ERR_SOCK;
+    if(rc)  return BS_RETURN_ERR_SOCK;
     
     rc = mqtt_connect_send();
-    if(rc)  return IME_RETURN_ERR_SOCK_SEND;
+    if(rc)  return BS_RETURN_ERR_SOCK_SEND;
    
     syslog (LOG_INFO, "InverterBroker: MQTT connected, client Id: %s", config.mqtt.clientid); 
     if(print_debug_info)
@@ -144,7 +145,7 @@ int  mqtt_service_connect()
         puts("");
     }
      
-    return IME_RETURN_CODE_OK;
+    return BS_RETURN_CODE_OK;
 }
 
 
@@ -173,19 +174,33 @@ void mqtt_service_keep_alive()
 static
 int  mqtt_service_publish_json()
 {
-    #define MSGJSONMAXSIZE 64
+    #define MSGJSONMAXSIZE 192   
     char json[MSGJSONMAXSIZE];
+    uint32_t    activepower, avgpower;
     
-    size_t len = snprintf(json, MSGJSONMAXSIZE, "{Time:[%.2i,%.2i,%.2i,%i],State:[%i,%i0,%i0],Grid[%i,%i,%i]}",
-                inverterInfo.InverterState.tmhour, inverterInfo.InverterState.tmmin, inverterInfo.InverterState.tmsec, inverterInfo.InverterState.tmweekday,
-                inverterInfo.InverterState.state, ntohs(inverterInfo.InverterState.activepower), ntohs(inverterInfo.InverterState.averagepower), 
-                ntohs(inverterInfo.Grid.Rvoltage), ntohs(inverterInfo.Grid.Svoltage), ntohs(inverterInfo.Grid.Tvoltage) );
+    activepower = ntohs(inverterInfo.InverterState.activepower) * 10; 
+    avgpower    = ntohs(inverterInfo.InverterState.averagepower) * 10;
     
+    
+    // taki drobny myk z dwoma spacjami po json
+    // zapobiega błędom w parsowaniu w nodered,
+    // gdyż z niewiadomych przyczyc stawiał czasem kropkę na końcu stringu
+    size_t len = snprintf(json, MSGJSONMAXSIZE, 
+        "{ \"Time\":\"%.2i:%.2i:%.2i\",\"Day\":%i, \"State\":%i,\"P\":%i,\"Avg\":%i, \"Grid\":{\"U\":[%i,%i,%i], \"AvgU\":[%i,%i,%i], \"I\":[%i,%i,%i],\"MaxU\":%i,\"L\":%i,\"OV\":%i}}  ",
+        inverterInfo.InverterState.tmhour, inverterInfo.InverterState.tmmin, inverterInfo.InverterState.tmsec, inverterInfo.InverterState.tmweekday,
+        inverterInfo.InverterState.state, activepower, avgpower,
+        ntohs(inverterInfo.Grid.Rvoltage), ntohs(inverterInfo.Grid.Svoltage), ntohs(inverterInfo.Grid.Tvoltage),
+        ntohs(inverterInfo.Grid.Ravgvoltage), ntohs(inverterInfo.Grid.Savgvoltage), ntohs(inverterInfo.Grid.Tavgvoltage),
+        ntohs(inverterInfo.Grid.Rcurrent), ntohs(inverterInfo.Grid.Scurrent), ntohs(inverterInfo.Grid.Tcurrent),
+        ntohs(inverterInfo.Grid.voltage), inverterInfo.Grid.maxphase, inverterInfo.Grid.phaseOverV
+        );
+   
     MQTTMessage mqttmsg;
     mqttmsg.qos = QOS1;
     mqttmsg.dup = 0; 
+    mqttmsg.retained = 1;
     mqttmsg.payload = json;
-    mqttmsg.payloadlen = ++len;
+    mqttmsg.payloadlen = len - 2;
     
     int rc = MQTTPublish(&mqttclient, mqtt_subtopic.json, &mqttmsg); 
     if(rc)
@@ -241,7 +256,7 @@ int  mqtt_service_publish_data()
     MQTTMessage mqttmsg;
     mqttmsg.qos = QOS1;
     mqttmsg.dup = 0; 
-    mqttmsg.payload = &(inverterInfo.InverterState);
+    mqttmsg.payload = &(inverterInfo);
     mqttmsg.payloadlen = sizeof(struct InverterInfo);
     
     int rc = MQTTPublish(&mqttclient, config.mqtt.binarytopic, &mqttmsg); 

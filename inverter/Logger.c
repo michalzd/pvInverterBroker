@@ -16,6 +16,17 @@
 
 #include "Sofar.h"
 
+
+/* 
+ * do obliczenia średniej napięcia fazowego 
+ */
+#define VOLTAGES_ARRAY_SIZE 10
+static uint16_t Rvoltages[VOLTAGES_ARRAY_SIZE];
+static uint16_t Svoltages[VOLTAGES_ARRAY_SIZE];
+static uint16_t Tvoltages[VOLTAGES_ARRAY_SIZE];
+
+
+
 /* 
  * funkcje komunikacji z falownikiem
  * podstawiamy właściwe dla invertera
@@ -50,6 +61,41 @@ void logger_set_parameters( const char *serialno, const char *ip_address, int ip
     SofarLogger.port = ip_port; 
 }
 
+
+uint8_t logger_get_min_tens(uint8_t minute)
+{
+    if(minute<10) return 0;
+    if(minute<20) return 10;
+    if(minute<30) return 20;
+    if(minute<40) return 30;
+    if(minute<50) return 40;
+    return 50;
+}
+
+
+
+static 
+void logger_clear_voltages()
+{
+    int i;
+    register int v=2300;
+    for(i=0; i<VOLTAGES_ARRAY_SIZE; i++)
+    {
+        Rvoltages[i] = v;
+        Svoltages[i] = v;
+        Tvoltages[i] = v;
+    }
+}
+
+static
+uint16_t logger_get_average_voltage(uint8_t  minute, uint16_t voltages[], uint16_t current_voltage)
+{
+    uint32_t suma = 0; 
+    uint8_t i = (minute - logger_get_min_tens(minute) );
+    voltages[i] = current_voltage;
+    for(i=0; i<VOLTAGES_ARRAY_SIZE; i++) suma+= voltages[i];
+    return (suma / 10); 
+}
 
 
 /*
@@ -95,25 +141,31 @@ void logger_refresh_state()
 
 }
 
-void logger_refresh_average()
+
+void logger_refresh_average_power()
 {
     static uint32_t  powersum = 0;
     static uint8_t   lastminsum = 0;
     static uint32_t  lastAvrPower = 0;
-    int dminunts;
+    int deltaminunts;
     
     inverterState.averagepower = lastAvrPower;
-    
-    if(inverterState.tmmin == 1 && lastminsum==0) 
+     
+    if(inverterState.tmmin < lastminsum)
     {
+        // next hour, clear  
         inverterState.averagepower = 0 ;
         powersum = 0;
+        lastminsum = 0;
     }
-    if(inverterState.tmmin != lastminsum) {
-        powersum += inverterState.activepower;
-        dminunts = inverterState.tmmin;
-        if(dminunts==0) dminunts = 60;
-        inverterState.averagepower = powersum / dminunts;
+    
+    if(inverterState.tmmin != lastminsum) 
+    {
+        deltaminunts = inverterState.tmmin - lastminsum;
+        powersum += (inverterState.activepower * deltaminunts);
+        deltaminunts = inverterState.tmmin;
+        if(deltaminunts==0) deltaminunts = 60;
+        inverterState.averagepower = powersum / deltaminunts;
     }
 
     lastAvrPower = inverterState.averagepower;
@@ -148,13 +200,19 @@ int logger_refresh()
         rv = error_code;
     }
     
-    logger_refresh_average();
-
+    /* srednia moc z bieżącej godziny 
+     * i srednie napięcia z ostatnich 10 minut
+     */
+    logger_refresh_average_power();
+    gridState.Ravgvoltage = logger_get_average_voltage(inverterState.tmmin, Rvoltages, gridState.Rvoltage);
+    gridState.Savgvoltage = logger_get_average_voltage(inverterState.tmmin, Svoltages, gridState.Svoltage);
+    gridState.Tavgvoltage = logger_get_average_voltage(inverterState.tmmin, Tvoltages, gridState.Tvoltage);
+    
     return rv;
 }
 
 
-int logger_clear_data()
+void logger_clear_data()
 {
 	inverterState.activepower = 0;
         inverterState.averagepower = 0;
@@ -171,5 +229,6 @@ int logger_clear_data()
 	InverterInputPV2.voltage = 0;
 	InverterInputPV2.current = 0;
 
-	return IME_RETURN_CODE_OK;
+        logger_clear_voltages();
+         
 }

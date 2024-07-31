@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h> 
-#include <Ime.h>
+#include <retcode.h>
 #include <threadInverter.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -31,7 +31,7 @@ int config_SetLoggerPar( const char *serialno, const char *ip_address, const cha
     uint16_t refreshtime = atoi(refresh_time);
     logger_set_parameters(serialno, ip_address, port );
     thread_inverter_set_refresh_time(refreshtime);
-    return IME_RETURN_CODE_OK;
+    return EXIT_SUCCESS;
 }
 
 
@@ -40,12 +40,13 @@ int config_SetServicePar( const char *ip_port, const char *startup )
     config.service.logfilename = VAR_LOG_FILE;
     config.service.port = atoi(ip_port);
 
-    if(config.service.port<SERVICE_PORT_RANGE_MIN || config.service.port>SERVICE_PORT_RANGE_MAX){
-            syslog(LOG_ERR, "InverterBroker: service port out of range: %i, %i", SERVICE_PORT_RANGE_MIN, SERVICE_PORT_RANGE_MAX);
-            if(print_debug_info) printf("InverterBroker: service port %i out of range", config.service.port);
-            return IME_RETURN_ERR_ERROR;
+    if(config.service.port<SERVICE_PORT_RANGE_MIN || config.service.port>SERVICE_PORT_RANGE_MAX)
+    {
+        syslog(LOG_ERR, "InverterBroker: service port out of range: %i, %i", SERVICE_PORT_RANGE_MIN, SERVICE_PORT_RANGE_MAX);
+        if(print_debug_info) printf("InverterBroker: service port %i out of range", config.service.port);
+        return EXIT_FAILURE;
     }
-    return IME_RETURN_CODE_OK;
+    return EXIT_SUCCESS;
 }
 
 

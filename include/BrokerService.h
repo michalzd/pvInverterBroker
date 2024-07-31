@@ -14,12 +14,11 @@
 #include <stdint.h>
 
 /*
- * typ i struktury przekazywane w komunikatach
+ * typ i struktury przekazywane w komunikatach UDP
  */
 enum BrokerRequestType
 {
-    BrokerRequestTypeUndefined = 0,
-    BrokerRequestTypeInverterInfoJson,  
+    BrokerRequestTypeUndefined = 0,  
     BrokerRequestTypeInverterInfo,
     BrokerRequestTypeSetListener,
     BrokerRequestTypeInverterState,
@@ -28,25 +27,35 @@ enum BrokerRequestType
 };
 
 
-enum BrokerListener
-{
-	BrokerListenerUnregister = 0,
-	BrokerListenerRegister 
-};
 
 
 struct BrokerRequestInfo
 {
-	uint8_t RequestType;
-	uint8_t Modul;
+    uint8_t RequestType; 
 };
+
+/*
+ * rejestracja/ wyrejestrowanie listenera UDP
+ * do zarejetrowanego listenera będzie automatycznie przekazywany komunikat struct InverterInfo
+ * z aktualnym stanem   
+ */
+enum BrokerListener
+{
+    BrokerListenerUnregister = 0,
+    BrokerListenerRegister 
+};
+
 
 struct BrokerRequestInfoListener
 {
-	uint8_t RequestType;
-	uint8_t RegisterListener;
+    uint8_t RequestType;
+    uint8_t RegisterListener;
 };
 
+
+/*
+ * to jest automatyczna odpowiedz na nieznany typ komunikatu request
+ */
 struct BrokerResponseHello
 {
 	uint8_t ResponseType;
@@ -69,14 +78,10 @@ enum InverterStateEnum
 };
 
 
-enum PhaseNo
-{
-	Phase_R = 0x10,	// faza R
-	Phase_S = 0x20,	// faza S
-	Phase_T = 0x40,	// faza T
-};
-
-
+/*
+ * struktira przekazywana w komunikacie UDP 
+ * jako odpowiedz na BrokerRequestTypeInverterState
+ */
 struct  Inverter
 {
 	uint8_t   state;
@@ -95,27 +100,49 @@ struct  InverterPV
 	uint16_t current;
 };
 
-struct Grid
+
+enum PhaseNo
 {
-	uint16_t Rvoltage;		//  0.1 V
-	uint16_t Rcurrent;		// 0.01 A
-	uint16_t Svoltage;
-	uint16_t Scurrent;
-	uint16_t Tvoltage;
-	uint16_t Tcurrent;
-	uint16_t voltage;
-	uint8_t	 maxphase;
-	uint8_t	 phaseOverV;
+	Phase_R = 0x10,	// faza R
+	Phase_S = 0x20,	// faza S
+	Phase_T = 0x40,	// faza T
 };
 
 
 
+/*
+ * struktira przekazywana w komunikacie UDP 
+ * jako odpowiedz na BrokerRequestTypeGridState
+ */
+struct Grid
+{
+    uint16_t Rvoltage;		//  0.1 V
+    uint16_t Rcurrent;		// 0.01 A
+    uint16_t Svoltage;
+    uint16_t Scurrent;
+    uint16_t Tvoltage;
+    uint16_t Tcurrent;
+    uint16_t voltage;
+    uint8_t  maxphase;
+    uint8_t  phaseOverV;
+    uint16_t Ravgvoltage;       // grid R average voltage
+    uint16_t Savgvoltage;       // grid S average voltage
+    uint16_t Tavgvoltage;       // grid T average voltage   
+};
+
+
+/*
+ * struktira przekazywana w komunikacie UDP 
+ * jako odpowiedz na BrokerRequestTypeInverterInfo
+ * 
+ * jest również przekazywana automatycznie do zarejestrowanego Listenera
+ */
 struct InverterInfo
 {
-	struct  Inverter 	InverterState;
-	struct  InverterPV	PV1;
-	struct  InverterPV	PV2;
-	struct  Grid		Grid;
+    struct  Inverter 	InverterState;
+    struct  InverterPV	PV1;
+    struct  InverterPV	PV2;
+    struct  Grid	Grid;
 };
 
 

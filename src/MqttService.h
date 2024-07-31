@@ -1,10 +1,10 @@
 /*
  ============================================================================
- Name        : ImeService.h
+ Name        : MqttService.h
  Author      : mimi
  Version     : 01.2003
  Copyright   : GNU GENERAL PUBLIC LICENSE
- Description : wątek servisu  
+ Description : mqtt client 
  ============================================================================
  */
 

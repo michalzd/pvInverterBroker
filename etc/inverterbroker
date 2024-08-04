@@ -12,5 +12,5 @@ service_port	8898
 # mqtt server  topic danych textowych oraz binarnych 
 # domyœlny port severa 1883, nie musi byæ podawany
 mqtt_server		192.168.10.80:1883
-mqtt_topic		/ime/inverter/
-mqtt_binary_topic	/ime/inverterbin
+mqtt_topic		ime/inverter/
+mqtt_binary_topic	ime/inverterbin

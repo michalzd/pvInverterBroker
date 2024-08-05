@@ -1,4 +1,5 @@
-# Sofar Logger 
+# Sofar Logger
+# SN jest podany na etykietce urz¹dzenia
 logger_sn	2363445823
 logger_addr	192.168.10.70
 logger_port	8899
@@ -12,5 +13,11 @@ service_port	8898
 # mqtt server  topic danych textowych oraz binarnych 
 # domyœlny port severa 1883, nie musi byæ podawany
 mqtt_server		192.168.10.80:1883
+
+# w tym temacie s¹ dwa subtopic:
+# json  z danymi json
+# state z danymi tekstowymi
 mqtt_topic		ime/inverter/
+
+# w tym temacie dane s¹ w postaci struktury do wykorzystania we w³asnym programie 
 mqtt_binary_topic	ime/inverterbin

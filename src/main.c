@@ -61,7 +61,7 @@ int main(int argc, char**argv) {
 
     syslog (LOG_INFO, "InverterBroker Start");
     if(print_debug_info) puts("InverterBroker Start");
-
+    
     thread_inverter_create();
     broker_service_start();
     

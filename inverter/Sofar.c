@@ -369,17 +369,31 @@ int Sofar_GetOnGridPhase(struct Sofar_OnGridPhasePower *grid_phase_power)
     grid_phase_power->ReactivePower_R = ntohs(responsedata->ReactivePower_R);
     grid_phase_power->PowerFactor_R = ntohs(responsedata->PowerFactor_R);
     
-    grid_phase_power->Voltage_S = ntohs(responsedata->Voltage_S);
-    grid_phase_power->Current_S = ntohs(responsedata->Current_S);
-    grid_phase_power->ActivePower_S = ntohs(responsedata->ActivePower_S);
-    grid_phase_power->ReactivePower_S = ntohs(responsedata->ReactivePower_S);
-    grid_phase_power->PowerFactor_S = ntohs(responsedata->PowerFactor_S);
+//    grid_phase_power->Voltage_S = ntohs(responsedata->Voltage_S);
+//    grid_phase_power->Current_S = ntohs(responsedata->Current_S);
+//    grid_phase_power->ActivePower_S = ntohs(responsedata->ActivePower_S);
+//    grid_phase_power->ReactivePower_S = ntohs(responsedata->ReactivePower_S);
+//    grid_phase_power->PowerFactor_S = ntohs(responsedata->PowerFactor_S);
+//    
+//    grid_phase_power->Voltage_T = ntohs(responsedata->Voltage_T);
+//    grid_phase_power->Current_T = ntohs(responsedata->Current_T);
+//    grid_phase_power->ActivePower_T = ntohs(responsedata->ActivePower_T);
+//    grid_phase_power->ReactivePower_T = ntohs(responsedata->ReactivePower_T);
+//    grid_phase_power->PowerFactor_T = ntohs(responsedata->PowerFactor_T);
     
-    grid_phase_power->Voltage_T = ntohs(responsedata->Voltage_T);
-    grid_phase_power->Current_T = ntohs(responsedata->Current_T);
-    grid_phase_power->ActivePower_T = ntohs(responsedata->ActivePower_T);
-    grid_phase_power->ReactivePower_T = ntohs(responsedata->ReactivePower_T);
-    grid_phase_power->PowerFactor_T = ntohs(responsedata->PowerFactor_T);
+    // mam zamienione dwie fazy: R - L1,  S - L3,  T - L2 
+    grid_phase_power->Voltage_S = ntohs(responsedata->Voltage_T);
+    grid_phase_power->Current_S = ntohs(responsedata->Current_T);
+    grid_phase_power->ActivePower_S = ntohs(responsedata->ActivePower_T);
+    grid_phase_power->ReactivePower_S = ntohs(responsedata->ReactivePower_T);
+    grid_phase_power->PowerFactor_S = ntohs(responsedata->PowerFactor_T);
+    
+    grid_phase_power->Voltage_T = ntohs(responsedata->Voltage_S);
+    grid_phase_power->Current_T = ntohs(responsedata->Current_S);
+    grid_phase_power->ActivePower_T = ntohs(responsedata->ActivePower_S);
+    grid_phase_power->ReactivePower_T = ntohs(responsedata->ReactivePower_S);
+    grid_phase_power->PowerFactor_T = ntohs(responsedata->PowerFactor_S);
+    
      
     return BS_RETURN_CODE_OK;
 }
@@ -460,7 +474,15 @@ int logger_sofar_inverter_state()
 
     rcv = Sofar_GetSysState(&sysState);
     if(rcv) return rcv;
-   
+    
+    // czasem bywa dziwny status, ale produkcja idzie, więc odczytuję ponownie
+    if(sysState.SysState != 2) 
+    {
+        if(gridState.Rcurrent > 100 || gridState.Scurrent > 100 || gridState.Tcurrent > 100)
+            rcv = Sofar_GetSysState(&sysState);
+        if(rcv) return rcv;
+    }
+       
     inverterState.state = Sofar_StateConvert(sysState.SysState);
     if(sysState.SysState==2)  
     {
@@ -470,13 +492,16 @@ int logger_sofar_inverter_state()
     }
     else 
     {
-        // czasem bywa dziwny status, ale produkcja idzie, przestawiam to na stan normalny
+        // w przypadku błądnego statusu, gdy produkcja idzie przestawiam na stan normalny
         if(sysState.SysState != 2)
-           if(gridState.Rcurrent > 100 || gridState.Scurrent > 100 || gridState.Tcurrent > 100) inverterState.state = 0; 
-    
-        if(inverterState.state==InverterStateGridFault)  inverterState.activepower = 0;
+           if(gridState.Rcurrent > 100 || gridState.Scurrent > 100 || gridState.Tcurrent > 100)
+           {
+               inverterState.state = InverterStateNormal; 
+               inverterState.activepower = lastPower;
+           }
     }
     
+    if(inverterState.state==InverterStateGridFault)  inverterState.activepower = 0;
     if(inverterState.activepower > 1500) inverterState.activepower = lastPower;
     lastState = inverterState.state;
     lastPower = inverterState.activepower;

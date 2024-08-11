@@ -18,8 +18,9 @@ int  mqtt_service_connect();
 void mqtt_service_disconnect();
 void mqtt_service_keep_alive();
 
+
 /* 
- * publish mqtt message from inverter  
+ * publish mqtt message  
  */
 int  mqtt_service_publish();
 

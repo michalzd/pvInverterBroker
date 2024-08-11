@@ -68,7 +68,13 @@ void mqtt_service_init()
     
     strncpy(mqtt_subtopic.state, config.mqtt.topic, SUBTOPIC_SZ);
     strcpy(mqtt_subtopic.state + topiclen, "/state");
-     
+    
+    if(print_debug_info)
+    {
+        printf("MQTT topics: %s %s \n     binary: ", mqtt_subtopic.state, mqtt_subtopic.json ); 
+        puts(config.mqtt.binarytopic);
+    }
+    
 }
 
 /*
@@ -166,6 +172,7 @@ void mqtt_service_keep_alive()
     mqtt_service_disconnect();
     mqtt_service_connect();    
 }
+
 
 
 /* 

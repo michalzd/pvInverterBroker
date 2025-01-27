@@ -147,14 +147,17 @@ void logger_refresh_average_power()
     static uint32_t  powersum = 0;
     static int       lastminsum = 0;
     static uint32_t  lastAvrPower = 0;
+    int16_t activepwr;
     int deltaminunts;
     
     inverterState.averagepower = lastAvrPower;
-     
+    activepwr = inverterState.activepower;
+    if(activepwr < 0) activepwr = 0;
+    
     if(inverterState.tmmin < lastminsum)
     {
         // next hour, clear  
-        inverterState.averagepower = inverterState.activepower;
+        inverterState.averagepower = activepwr;
         powersum = 0;
         lastminsum = 0; 
     }
@@ -162,7 +165,7 @@ void logger_refresh_average_power()
     if(inverterState.tmmin != lastminsum) 
     {
         deltaminunts = inverterState.tmmin - lastminsum;
-        powersum += (inverterState.activepower * deltaminunts);
+        powersum += (activepwr * deltaminunts);
         deltaminunts = inverterState.tmmin;
         if(deltaminunts==0) deltaminunts = 1;
         inverterState.averagepower = powersum / deltaminunts;

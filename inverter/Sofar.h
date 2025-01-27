@@ -49,7 +49,7 @@ int logger_sofar_inverter_grid();
 // Sofar Registers  0x0400 to 0x0416
 struct Sofar_SysStateInfo
 {
-    uint16_t AddressMask[4];		//
+    uint16_t AddressMask[4];		// olewam
     uint16_t SysState;
     uint16_t FaultTable[18];
 };
@@ -58,14 +58,14 @@ struct Sofar_SysStateInfo
 // Sofar Registers  0x0480 to 0x048a
 struct Sofar_OnGrigPowerOutput
 {
-    uint16_t AddressMask[4];		//
-    uint16_t FrequencyGrid;
-    uint16_t ActivePowerOutputTotal;
-    uint16_t ReactivePowerOutputTotal;
-    uint16_t ApparetPowerOutputTotal;
-    uint16_t ActivePowerPccTotal;
-    uint16_t ReactivePowerPccTotal;
-    uint16_t ApparetPowerPccTotal;
+    uint16_t AddressMask[4];		// olewam
+    uint16_t FrequencyGrid;             // 0x0484
+    int16_t  ActivePowerOutputTotal;
+    int16_t  ReactivePowerOutputTotal;
+    int16_t  ApparentPowerOutputTotal;
+    int16_t  ActivePowerPccTotal;       // 0x0488 positive to fed into the grid,negative to draw from the grid,
+    int16_t  ReactivePowerPccTotal;    
+    int16_t  ApparentPowerPccTotal;
 };
 
 // Sofar Registers  0x048d to 0x04bc
@@ -131,7 +131,7 @@ struct Sofar_OnGridPhasePower
 // Sofar Registers  0x0580 to 0x058c
 struct Sofar_PVInput
 {
-    uint16_t AddressMask[4];		//
+    uint16_t AddressMask[4];		// olewam
     uint16_t VoltagePV1;
     uint16_t CurrentPV1;
     uint16_t PowerPV1;
@@ -142,6 +142,16 @@ struct Sofar_PVInput
     uint16_t CurrentPV3;
     uint16_t PowerPV3;
     // (jest tego wiecej)
+};
+
+// Sofar Registers  0x0500  to 0x0507
+struct Sofar_OffGridPower
+{
+    uint16_t AddressMask[4];		// olewam
+    uint16_t ActivePowerLoadTotal;      //I16 0,01 kW R Load Active power Consumed by load is positive Feedback from load is negative End User 0 
+    uint16_t ReactivePowerLoadTotal;    //I16 0,01 kW R Load Reactive power End User 0  
+    uint16_t ApparentPowerLoadTotal;    //I16 0,01 kW R Load Apparent power Consumed by load is positive Feedback from load is negative End User 0 
+    uint16_t Frequency;                 //U16 0,01 Hz R Frequency_Output
 };
 
 

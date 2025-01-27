@@ -1,0 +1,16 @@
+[Unit]
+Description=Inverter Broker Service
+After=network.target
+
+[Service]
+ExecStart=/usr/pvb/inverterbroker
+WorkingDirectory=/usr/pvb
+Restart=always
+RestartSec=3
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=%n
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

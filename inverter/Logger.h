@@ -26,6 +26,7 @@
  */
 extern volatile struct Inverter  inverterState;
 extern volatile struct Grid	 gridState;
+extern volatile struct InverterHybrid  hybridState;
 
 extern struct InverterPV InverterInputPV1;
 extern struct InverterPV InverterInputPV2;

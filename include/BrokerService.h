@@ -70,8 +70,10 @@ enum InverterStateEnum
 	InverterStateGridDetect,
 	InverterStatePVErr,
 	InverterStateGridFault,
-	InverterStateErr,
-	InverterStateInit,
+        InverterStateErr,
+        InverterStateUpgrade,
+	InverterStateCharging,
+        InverterStateInit,
 	InverterStateOff = 0x10,
 	InverterStateConnectionErr,
 	InverterStateSocketErr
@@ -79,18 +81,25 @@ enum InverterStateEnum
 
 
 /*
- * struktira przekazywana w komunikacie UDP 
+ * struktura przekazywana w komunikacie UDP 
  * jako odpowiedz na BrokerRequestTypeInverterState
  */
 struct  Inverter
 {
 	uint8_t   state;
-	int16_t   activepower;
-	int16_t	  averagepower;
-	uint8_t   tmsec;		/* Second */
+	int16_t   activepower;          /* Total Active power */
+	int16_t	  averagepower;         
+	uint8_t   tmsec;		/* Second              */
 	uint8_t   tmmin;		/* Minutes.	[0-59] */
 	uint8_t   tmhour;		/* Hours.	[0-23] */
-	uint8_t   tmweekday;		/* Day of week.	[0-6] */
+	uint8_t   tmweekday;		/* Day of week.	[0-6]  */
+};
+
+struct  InverterHybrid
+{
+	int16_t   activepower;          /* Total Active power */
+        int16_t	  gridpower;            /* positive to fed into the grid, negative to draw from the grid */ 
+        int16_t   loadpower;            /* Active power Consumed by load */
 };
 
 
@@ -140,6 +149,7 @@ struct Grid
 struct InverterInfo
 {
     struct  Inverter 	InverterState;
+    struct  InverterHybrid Hybrid;
     struct  InverterPV	PV1;
     struct  InverterPV	PV2;
     struct  Grid	Grid;

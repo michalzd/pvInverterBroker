@@ -8,7 +8,7 @@ logger_port	8899
 refresh_time	30
 
 # broker udp port 
-service_port	8898
+service_port	8889
 
 # mqtt server  topic danych textowych oraz binarnych 
 # domyœlny port severa 1883, nie musi byæ podawany

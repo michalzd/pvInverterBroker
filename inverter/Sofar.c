@@ -59,8 +59,8 @@ union  SerialNo
 static int  loggerSck;
 static int  sck_error;
 static int  lastState;
-static int  lastPower = 0;
-static int  lastAvrPower = 0;
+static int16_t  lastPower = 0;
+static int16_t  lastAvrPower = 0;
 
 static
 uint64_t sofar_GetSerialNo(void)
@@ -331,10 +331,41 @@ int Sofar_GetOnGridPower(struct Sofar_OnGrigPowerOutput *grid_power_output)
     grid_power_output->FrequencyGrid = ntohs(responsedata->FrequencyGrid);
     grid_power_output->ActivePowerOutputTotal = ntohs(responsedata->ActivePowerOutputTotal);
     grid_power_output->ReactivePowerOutputTotal = ntohs(responsedata->ReactivePowerOutputTotal);         
-    grid_power_output->ApparetPowerOutputTotal  = ntohs(responsedata->ApparetPowerOutputTotal);
+    grid_power_output->ApparentPowerOutputTotal  = ntohs(responsedata->ApparentPowerOutputTotal);
     grid_power_output->ActivePowerPccTotal   = ntohs(responsedata->ActivePowerPccTotal);
     grid_power_output->ReactivePowerPccTotal = ntohs(responsedata->ReactivePowerPccTotal);
-    grid_power_output->ApparetPowerPccTotal  = ntohs(responsedata->ApparetPowerPccTotal);
+    grid_power_output->ApparentPowerPccTotal  = ntohs(responsedata->ApparentPowerPccTotal);
+    
+    return BS_RETURN_CODE_OK;
+}
+
+static
+int Sofar_GetOffGridPower(struct Sofar_OffGridPower *offgrid_power_output)
+{
+    int rv;
+    ModBus_Request_t modbusrequest;
+    ModBus_Response_t modbusresponse;
+    struct Sofar_OffGridPower *responsedata;
+
+    // Sofar Registers  0x0500  to 0x0507
+    uint16_t registerFrom = 0x0500;
+    uint16_t registerTo   = 0x0507;
+    modbusrequest.device = 0x00;
+    modbusrequest.functioncode = 0x03;
+    modbusrequest.firstreg = registerFrom;
+    modbusrequest.quantity = registerTo - registerFrom + 1; // 0x0080
+    modbusrequest.crc = modbusrequest_crc(&modbusrequest, 6);
+
+    rv = logger_sofar_SendRequest( &modbusrequest );
+    if(rv!=BS_RETURN_CODE_OK) return rv; 						// send error if not zero
+    rv = logger_sofar_RecvResponse(&modbusresponse );
+    if(rv!=BS_RETURN_CODE_OK) return rv;
+    
+    responsedata = (struct Sofar_OffGridPower *) modbusresponse.data;
+    offgrid_power_output->Frequency = ntohs(responsedata->Frequency);
+    offgrid_power_output->ActivePowerLoadTotal = ntohs(responsedata->ActivePowerLoadTotal);
+    offgrid_power_output->ReactivePowerLoadTotal = ntohs(responsedata->ReactivePowerLoadTotal);         
+    offgrid_power_output->ApparentPowerLoadTotal  = ntohs(responsedata->ApparentPowerLoadTotal); 
     
     return BS_RETURN_CODE_OK;
 }
@@ -454,6 +485,8 @@ uint8_t Sofar_StateConvert( uint16_t sofar_state)
     if(sofar_state==1) return InverterStateGridDetect;
     if(sofar_state==2) return InverterStateNormal;
     if(sofar_state==4) return InverterStateGridFault;
+    if(sofar_state==6)  return InverterStateUpgrade;
+    if(sofar_state==7)  return InverterStateCharging;
     return 	InverterStateErr;
 }
 
@@ -467,6 +500,7 @@ int logger_sofar_inverter_state()
 {
     struct Sofar_SysStateInfo 	sysState;
     struct Sofar_OnGrigPowerOutput	powerOutput;
+    struct Sofar_OffGridPower   offgridPower;
     int rcv;
     
     inverterState.state = lastState;
@@ -493,18 +527,36 @@ int logger_sofar_inverter_state()
     else 
     {
         // w przypadku błądnego statusu, gdy produkcja idzie przestawiam na stan normalny
-        if(sysState.SysState != 2)
+        if(sysState.SysState != 2) 
+        {
+           inverterState.activepower = 0;
            if(gridState.Rcurrent > 100 || gridState.Scurrent > 100 || gridState.Tcurrent > 100)
            {
                inverterState.state = InverterStateNormal; 
                inverterState.activepower = lastPower;
            }
+        }
     }
     
-    if(inverterState.state==InverterStateGridFault)  inverterState.activepower = 0;
-    if(inverterState.activepower > 1500) inverterState.activepower = lastPower;
+    // stan hybrydy
+    hybridState.activepower = powerOutput.ActivePowerOutputTotal; 
+    hybridState.gridpower = powerOutput.ActivePowerPccTotal;  
+    hybridState.loadpower = hybridState.activepower - hybridState.gridpower; // bede to wyliczac
+   
+//    rcv = Sofar_GetOffGridPower(&offgridPower);
+//    if( rcv == BS_RETURN_CODE_OK) 
+//    {
+//        hybridState.activepower = powerOutput.ActivePowerOutputTotal; 
+//        hybridState.gridpower = powerOutput.ActivePowerPccTotal; 
+//        hybridState.loadpower = offgridPower.ActivePowerLoadTotal; // niestety ta wartosc jest zerowa,
+//        hybridState.loadpower = hybridState.activepower - hybridState.gridpower; // bede to wyliczac
+//    }
+    
+    // if(inverterState.state==InverterStateGridFault)  inverterState.activepower = 0;
+    if(inverterState.activepower > 2500) inverterState.activepower = lastPower;
     lastState = inverterState.state;
     lastPower = inverterState.activepower;
+    if(lastPower < 0) lastPower = 0;
       
     return BS_RETURN_CODE_OK;
 }

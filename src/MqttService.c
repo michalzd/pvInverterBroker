@@ -181,21 +181,22 @@ void mqtt_service_keep_alive()
 static
 int  mqtt_service_publish_json()
 {
-    #define MSGJSONMAXSIZE 192   
+    #define MSGJSONMAXSIZE 256   
     char json[MSGJSONMAXSIZE];
-    uint32_t    activepower, avgpower;
+    int32_t    activepower, avgpower, gridpower, consumption;
     
     activepower = ntohs(inverterInfo.InverterState.activepower) * 10; 
     avgpower    = ntohs(inverterInfo.InverterState.averagepower) * 10;
-    
-    
+    gridpower   = ntohs(inverterInfo.Hybrid.gridpower) * 10;
+    consumption = ntohs(inverterInfo.Hybrid.loadpower) * 10;
+     
     // taki drobny myk z dwoma spacjami po json
     // zapobiega błędom w parsowaniu w nodered,
     // gdyż z niewiadomych przyczyc stawiał czasem kropkę na końcu stringu
     size_t len = snprintf(json, MSGJSONMAXSIZE, 
-        "{ \"Time\":\"%.2i:%.2i:%.2i\",\"Day\":%i, \"State\":%i,\"P\":%i,\"Avg\":%i, \"Grid\":{\"U\":[%i,%i,%i], \"AvgU\":[%i,%i,%i], \"I\":[%i,%i,%i],\"MaxU\":%i,\"L\":%i,\"OV\":%i}}  ",
+        "{ \"Time\":\"%.2i:%.2i:%.2i\",\"Day\":%i, \"State\":%i,\"P\":%i,\"Avg\":%i,\"GP\":%i,\"CP\":%i, \"Grid\":{\"U\":[%i,%i,%i], \"AvgU\":[%i,%i,%i], \"I\":[%i,%i,%i],\"MaxU\":%i,\"L\":%i,\"OV\":%i}}  ",
         inverterInfo.InverterState.tmhour, inverterInfo.InverterState.tmmin, inverterInfo.InverterState.tmsec, inverterInfo.InverterState.tmweekday,
-        inverterInfo.InverterState.state, activepower, avgpower,
+        inverterInfo.InverterState.state, activepower, avgpower, gridpower, consumption,
         ntohs(inverterInfo.Grid.Rvoltage), ntohs(inverterInfo.Grid.Svoltage), ntohs(inverterInfo.Grid.Tvoltage),
         ntohs(inverterInfo.Grid.Ravgvoltage), ntohs(inverterInfo.Grid.Savgvoltage), ntohs(inverterInfo.Grid.Tavgvoltage),
         ntohs(inverterInfo.Grid.Rcurrent), ntohs(inverterInfo.Grid.Scurrent), ntohs(inverterInfo.Grid.Tcurrent),
@@ -226,13 +227,15 @@ int  mqtt_service_publish_json()
 static
 int  mqtt_service_publish_state()
 {
-    #define MSGSTATEMAXSIZE 32
+    #define MSGSTATEMAXSIZE 64
     char  msgstate[MSGSTATEMAXSIZE];
      
-    size_t len = snprintf(msgstate, MSGSTATEMAXSIZE, "S%i, P %i0, Avg %i0", 
+    size_t len = snprintf(msgstate, MSGSTATEMAXSIZE, "S%i, P %i0, Avg %i0 Grid %i0 Con %i0",  
                           inverterInfo.InverterState.state,
                           ntohs(inverterInfo.InverterState.activepower), 
-                          ntohs(inverterInfo.InverterState.averagepower) );
+                          ntohs(inverterInfo.InverterState.averagepower),
+                          ntohs(inverterInfo.Hybrid.gridpower),
+                          ntohs(inverterInfo.Hybrid.loadpower) );
     
     MQTTMessage mqttmsg;
     mqttmsg.qos = QOS1;

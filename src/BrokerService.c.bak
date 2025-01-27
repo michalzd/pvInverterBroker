@@ -83,7 +83,7 @@ int broker_service_start()
     register int s = 0;
 
     srvsocket = 0;
-    s = broker_service_socket_open(config.service.port);
+    s = broker_service_socket_open( 8822 /*config.service.port*/);
     if(s<=0) {
         syslog (LOG_ERR, "InverterBroker: socket error: %i", errno );
         if(print_debug_info)

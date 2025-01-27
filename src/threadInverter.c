@@ -34,8 +34,9 @@
 #include "Config.h"
 #include "Logger.h"
 
-volatile struct Inverter  inverterState;
-volatile struct Grid	  gridState;
+volatile struct Inverter        inverterState;
+volatile struct Grid            gridState;
+volatile struct InverterHybrid  hybridState;
 
 struct InverterPV InverterInputPV1;
 struct InverterPV InverterInputPV2;
@@ -61,6 +62,10 @@ int thread_inverter_init()
 {
     inverterState.state = InverterStateInit;
     inverterState.activepower = 0;
+    hybridState.activepower = 0;
+    hybridState.gridpower = 0;
+    hybridState.loadpower = 0;
+    
     refresh_time = 30;
     logger_clear_data();
     return BS_RETURN_CODE_OK;    

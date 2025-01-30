@@ -83,23 +83,28 @@ int broker_service_start()
     register int s = 0;
 
     srvsocket = 0;
-    s = broker_service_socket_open(config.service.port);
-    if(s<=0) {
-        syslog (LOG_ERR, "InverterBroker: socket error: %i", errno );
+    uint16_t servicePort = 0; //było: config.service.port;
+    if(servicePort)
+    {
+        s = broker_service_socket_open(config.service.port);
+        if(s<=0) {
+            syslog (LOG_ERR, "InverterBroker: socket error: %i", errno );
+            if(print_debug_info)
+            {
+                printf("InverterBroker port %i error ", config.service.port);
+                puts("");
+            }
+            return BS_RETURN_ERR_SOCK;
+        }
+        syslog (LOG_INFO, "InverterBroker: socket port: %i", config.service.port ); 
         if(print_debug_info)
         {
-            printf("InverterBroker port %i error ", config.service.port);
+            printf("InverterBroker port %i ", config.service.port);
             puts("");
         }
-        return BS_RETURN_ERR_SOCK;
+        srvsocket = s;
     }
-    syslog (LOG_INFO, "InverterBroker: socket port: %i", config.service.port ); 
-    if(print_debug_info)
-    {
-        printf("InverterBroker port %i ", config.service.port);
-        puts("");
-    }
-    srvsocket = s;
+    
     loggersocket = thread_inverter_get_sck();
     
     mqtt_service_init();
@@ -133,7 +138,7 @@ int broker_service_thread()
     fd_set 	sckset;
 
     FD_ZERO(&sckset);
-    FD_SET (srvsocket,  &sckset);
+    // to chyba zbędne FD_SET (srvsocket,  &sckset);
     service_fdset(&sckset, srvsocket );
     service_fdset(&sckset, loggersocket );  
      
@@ -172,7 +177,7 @@ int broker_service_logger_msg(int sck)
     if(print_debug_info)
     {
        printf("PV State:%i Power[daW]: %i Avg: %i G: %i C: %i; RST [dV]:%i %i %i [cA]: %i %i %i Avg: %i %i %i", 
-              ntohs(inverterInfo.InverterState.state), 
+              inverterInfo.InverterState.state, 
               ntohs(inverterInfo.InverterState.activepower), 
               ntohs(inverterInfo.InverterState.averagepower),
               ntohs(inverterInfo.Hybrid.gridpower),  

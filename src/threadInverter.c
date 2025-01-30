@@ -149,6 +149,10 @@ int ime_inverter_msg_send()
     info.InverterState.state = inverterState.state;
     info.InverterState.activepower = htons(inverterState.activepower);
     info.InverterState.averagepower = htons(inverterState.averagepower);
+    info.Hybrid.activepower = htons(hybridState.activepower);
+    info.Hybrid.gridpower = htons(hybridState.gridpower);
+    info.Hybrid.loadpower = htons(hybridState.loadpower);
+    
     info.PV1.voltage = htons(InverterInputPV1.voltage);
     info.PV1.current = htons(InverterInputPV1.current);
     info.PV2.voltage = htons(InverterInputPV2.voltage);

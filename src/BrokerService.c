@@ -168,6 +168,13 @@ int broker_service_thread()
     return BS_RETURN_CODE_OK;
 }
 
+static inline int16_t ntoi16( int16_t value)
+{
+    value = ntohs(value);
+    return value;
+}
+
+
 static 
 int broker_service_logger_msg(int sck)
 {
@@ -178,10 +185,10 @@ int broker_service_logger_msg(int sck)
     {
        printf("PV State:%i Power[daW]: %i Avg: %i G: %i C: %i; RST [dV]:%i %i %i [cA]: %i %i %i Avg: %i %i %i", 
               inverterInfo.InverterState.state, 
-              ntohs(inverterInfo.InverterState.activepower), 
-              ntohs(inverterInfo.InverterState.averagepower),
-              ntohs(inverterInfo.Hybrid.gridpower),  
-              ntohs(inverterInfo.Hybrid.loadpower),  
+              ntoi16(inverterInfo.InverterState.activepower), 
+              ntoi16(inverterInfo.InverterState.averagepower),
+              ntoi16(inverterInfo.Hybrid.gridpower),  
+              ntoi16(inverterInfo.Hybrid.loadpower),  
               ntohs(inverterInfo.Grid.Rvoltage),
               ntohs(inverterInfo.Grid.Svoltage),
               ntohs(inverterInfo.Grid.Tvoltage),

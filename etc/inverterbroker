@@ -10,14 +10,14 @@ refresh_time	30
 # broker udp port 
 service_port	8889
 
-# mqtt server  topic danych textowych oraz binarnych 
-# domyślny port severa 1883, nie musi być podawany
-mqtt_server		192.168.10.80:1883
+# mqtt server  
+# default port 1883, nie musi byc podawany
+mqtt_server	192.168.10.80:1883
 
-# w tym temacie są dwa subtopic:
+# w tym temacie dwa subtopic:
 # json  z danymi json
 # state z danymi tekstowymi
-mqtt_topic		ime/inverter/
+mqtt_topic	ime/inverter
 
-# w tym temacie dane są w postaci struktury do wykorzystania we własnym programie 
-mqtt_binary_topic	ime/inverterbin
+# binaty data, struktura do wykorzystania we własnym programie 
+mqtt_binary_topic  ime/inverterbin

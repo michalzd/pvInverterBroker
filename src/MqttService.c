@@ -174,6 +174,11 @@ void mqtt_service_keep_alive()
 }
 
 
+static inline int16_t ntoi16( int16_t value)
+{
+    value = ntohs(value);
+    return value;
+}
 
 /* 
  * publish mqtt message as json object
@@ -185,10 +190,10 @@ int  mqtt_service_publish_json()
     char json[MSGJSONMAXSIZE];
     int32_t    activepower, avgpower, gridpower, consumption;
     
-    activepower = ntohs(inverterInfo.InverterState.activepower) * 10; 
-    avgpower    = ntohs(inverterInfo.InverterState.averagepower) * 10;
-    gridpower   = ntohs(inverterInfo.Hybrid.gridpower) * 10;
-    consumption = ntohs(inverterInfo.Hybrid.loadpower) * 10;
+    activepower = ntoi16(inverterInfo.InverterState.activepower) * 10; 
+    avgpower    = ntoi16(inverterInfo.InverterState.averagepower) * 10;
+    gridpower   = ntoi16(inverterInfo.Hybrid.gridpower) * 10;
+    consumption = ntoi16(inverterInfo.Hybrid.loadpower) * 10;
      
     // taki drobny myk z dwoma spacjami po json
     // zapobiega błędom w parsowaniu w nodered,
@@ -232,10 +237,10 @@ int  mqtt_service_publish_state()
      
     size_t len = snprintf(msgstate, MSGSTATEMAXSIZE, "S%i, P %i0, Avg %i0 Grid %i0 Con %i0",  
                           inverterInfo.InverterState.state,
-                          ntohs(inverterInfo.InverterState.activepower), 
-                          ntohs(inverterInfo.InverterState.averagepower),
-                          ntohs(inverterInfo.Hybrid.gridpower),
-                          ntohs(inverterInfo.Hybrid.loadpower) );
+                          ntoi16(inverterInfo.InverterState.activepower), 
+                          ntoi16(inverterInfo.InverterState.averagepower),
+                          ntoi16(inverterInfo.Hybrid.gridpower),
+                          ntoi16(inverterInfo.Hybrid.loadpower) );
     
     MQTTMessage mqttmsg;
     mqttmsg.qos = QOS1;

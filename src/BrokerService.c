@@ -93,8 +93,7 @@ int broker_service_start()
             {
                 printf("InverterBroker port %i error ", config.service.port);
                 puts("");
-            }
-            return BS_RETURN_ERR_SOCK;
+            } 
         }
         syslog (LOG_INFO, "InverterBroker: socket port: %i", config.service.port ); 
         if(print_debug_info)

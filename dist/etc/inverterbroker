@@ -20,9 +20,10 @@ mqtt_server	192.168.10.80:1883
 # bin   struktura z danymi binarnymi do wykorzystania we własnym programie
 mqtt_topic	ime/inverter
 
+
 #domoticz
 domoticz_topic	domoticz/in
+domoticz_inverter_state  1025 
 domoticz_pvpower_idx	 1026
 domoticz_gridpower_idx	 1027
 domoticz_consumption_idx 1028
-

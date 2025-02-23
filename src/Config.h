@@ -46,6 +46,8 @@ struct	UdpService
 #define MQTT_TOPIC_SZ   32
 #define MQTT_USERNAME_PASS_SZ   1
 #define MQTT_HOST_SZ  16
+#define MQTT_DOMOTICZ_ID_SZ   8
+
 
 struct	MqttServer
 {
@@ -58,11 +60,21 @@ struct	MqttServer
     char   binarytopic[MQTT_TOPIC_SZ];
 };
 
+struct Domoticz
+{
+    char   topic[MQTT_TOPIC_SZ];
+    char   stateidx[MQTT_DOMOTICZ_ID_SZ];
+    char   pvpoweridx[MQTT_DOMOTICZ_ID_SZ];
+    char   gridpoweridx[MQTT_DOMOTICZ_ID_SZ];
+    char   conspoweridx[MQTT_DOMOTICZ_ID_SZ];
+};
+
 
 struct ConfigBroker
 {
     struct  UdpService  service;
     struct  MqttServer  mqtt;
+    struct  Domoticz    domoticz;
 };
 
 
@@ -84,6 +96,12 @@ enum CONFIG_KEY
     CONFIG_KEY_MQTT_CLIENTID, 
     CONFIG_KEY_MQTT_TOPIC,
     CONFIG_KEY_MQTT_BINARY_TOPIC,
+    // dane do domoticza
+    CONFIG_KEY_DOMOTICZ_TOPIC,
+    CONFIG_KEY_DOMOTICZ_STATE_ID,
+    CONFIG_KEY_DOMOTICZ_PV_POWER_ID, 
+    CONFIG_KEY_DOMOTICZ_GRID_POWER_ID,
+    CONFIG_KEY_DOMOTICZ_CONSUMTION_POWER_ID,
     
     CONFIG_KEY_END_LIST
 };

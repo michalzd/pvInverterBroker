@@ -27,7 +27,7 @@
 #include "retcode.h"
 #include "Service.h" 
 #include "MqttService.h"
-#include "Config.h"  
+#include "Config.h" 
 
 #define SUBTOPIC_SZ 40
 
@@ -35,6 +35,7 @@ struct Subtopic
 {
     char json[SUBTOPIC_SZ];
     char state[SUBTOPIC_SZ];  
+    char bin[SUBTOPIC_SZ];  
 };
 
 #define  SRV_BUFFER_SIZE 256
@@ -69,10 +70,19 @@ void mqtt_service_init()
     strncpy(mqtt_subtopic.state, config.mqtt.topic, SUBTOPIC_SZ);
     strcpy(mqtt_subtopic.state + topiclen, "/state");
     
+    if(config.mqtt.binarytopic[0]!=0) strncpy(mqtt_subtopic.bin, config.mqtt.binarytopic, SUBTOPIC_SZ);
+    else 
+    {
+        strncpy(mqtt_subtopic.bin, config.mqtt.topic, SUBTOPIC_SZ);
+        strcpy(mqtt_subtopic.bin + topiclen, "/bin");
+    }
+    
     if(print_debug_info)
     {
-        printf("MQTT topics: %s %s \n     binary: ", mqtt_subtopic.state, mqtt_subtopic.json ); 
-        puts(config.mqtt.binarytopic);
+        printf("MQTT topics: ");
+        if(config.domoticz.topic[0]) printf(config.domoticz.topic);
+        printf("  %s  %s\n     binary: ", mqtt_subtopic.state, mqtt_subtopic.json ); 
+        puts(mqtt_subtopic.bin);
     }
     
 }
@@ -274,7 +284,7 @@ int  mqtt_service_publish_data()
     mqttmsg.payload = &(inverterInfo);
     mqttmsg.payloadlen = sizeof(struct InverterInfo);
     
-    int rc = MQTTPublish(&mqttclient, config.mqtt.binarytopic, &mqttmsg); 
+    int rc = MQTTPublish(&mqttclient, mqtt_subtopic.bin, &mqttmsg); 
     if(rc)
     {
         syslog (LOG_INFO, "InverterBroker: MQTT publish binary data error %i", rc);
@@ -288,8 +298,66 @@ int  mqtt_service_publish_data()
     return rc;
 }
 
+
 /* 
- * publish mqtt message from inverter  
+ * publish mqtt message as struct data object to domoticz, format:
+ * domoticz/in {"command":"udevice","idx":1026,"svalue":"0;0"} 
+ */
+static
+int  mqtt_service_publish_domoticz(const char *idx, char *value)
+{ 
+    char json[MSGJSONMAXSIZE];
+    
+    if(idx[0]==0) return 0;
+    
+    size_t len = snprintf(json, MSGJSONMAXSIZE, 
+                "{ \"command\":\"udevice\",\"idx\":%s, \"svalue\":\"%s\" }", 
+                idx, value);
+        
+    MQTTMessage mqttmsg;
+    mqttmsg.qos = QOS1;
+    mqttmsg.dup = 0; 
+    mqttmsg.retained = 1;
+    mqttmsg.payload = json;
+    mqttmsg.payloadlen = len;
+    int rc = MQTTPublish(&mqttclient, config.domoticz.topic, &mqttmsg); 
+    
+    return 0;
+}
+
+static
+int  mqtt_service_to_domoticz()
+{ 
+    #define MSGVALUESIZE 16   
+    char json[MSGVALUESIZE];
+    int32_t    activepower, avgpower, gridpower, consumption;
+    size_t len;
+    
+    if (config.domoticz.topic[0] == 0) return 0;
+   
+    activepower = ntoi16(inverterInfo.InverterState.activepower) * 10; 
+    avgpower    = ntoi16(inverterInfo.InverterState.averagepower) * 10;
+    gridpower   = ntoi16(inverterInfo.Hybrid.gridpower) * 10;
+    consumption = ntoi16(inverterInfo.Hybrid.loadpower) * 10;
+    
+    snprintf(json, MSGVALUESIZE, "%i", inverterInfo.InverterState.state);
+    mqtt_service_publish_domoticz(config.domoticz.stateidx, json);
+    
+    snprintf(json, MSGVALUESIZE, "%i", activepower);
+    mqtt_service_publish_domoticz(config.domoticz.pvpoweridx, json);
+    
+    snprintf(json, MSGVALUESIZE, "%i", gridpower);
+    mqtt_service_publish_domoticz(config.domoticz.gridpoweridx, json);
+    
+    snprintf(json, MSGVALUESIZE, "%i", consumption);
+    mqtt_service_publish_domoticz(config.domoticz.conspoweridx, json);
+    
+    return 0;
+}
+
+
+/* 
+ * publish mqtt message from inverter 
  */
 int  mqtt_service_publish()
 {
@@ -303,6 +371,8 @@ int  mqtt_service_publish()
     
     rc = mqtt_service_publish_json();
     if(rc) return rc;
+    
+    mqtt_service_to_domoticz();
     
     return rc;
 }

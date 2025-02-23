@@ -74,10 +74,29 @@ void config_SetMqttPar( const char *ip_address,  const char *client_id, const ch
     config.mqtt.user[0]   = 0;  
     config.mqtt.passwd[0] = 0;
     
-    if(binary_topic[0] == 0) binary_topic = topic;
     strncpy(config.mqtt.topic, topic, MQTT_TOPIC_SZ);
-    strncpy(config.mqtt.binarytopic, binary_topic, MQTT_TOPIC_SZ);
+    config.mqtt.binarytopic[0] = 0;
+    if(binary_topic[0] == 0) strncpy(config.mqtt.binarytopic, binary_topic, MQTT_TOPIC_SZ);
+
+}
+
+void config_SetDomoticzPar(const char *topic,  const char *state_id, const char *pvpower_id, const char *gridpower_idx, const char *consumtonpover_idx )
+{
+    config.domoticz.topic[0] = 0;
+    config.domoticz.stateidx[0] = 0;
+    config.domoticz.pvpoweridx[0] = 0;
+    config.domoticz.gridpoweridx[0] = 0;
+    config.domoticz.conspoweridx[0] = 0;
     
+    if( strlen(topic)==0 ) return;
+    if( strcmp(topic, "none" )==0 ) return;
+    
+    strncpy(config.domoticz.topic, topic, MQTT_TOPIC_SZ);
+    strncpy(config.domoticz.stateidx, state_id, MQTT_TOPIC_SZ);
+    strncpy(config.domoticz.pvpoweridx, pvpower_id, MQTT_DOMOTICZ_ID_SZ);
+    
+    if( strlen(gridpower_idx) ) strncpy(config.domoticz.gridpoweridx, gridpower_idx, MQTT_DOMOTICZ_ID_SZ);
+    if( strlen(consumtonpover_idx) ) strncpy(config.domoticz.conspoweridx, consumtonpover_idx, MQTT_DOMOTICZ_ID_SZ);
 }
 
 int config_ReadFile(void)
@@ -92,10 +111,18 @@ int config_ReadFile(void)
     Lista[CONFIG_KEY_REFRESH_TIME].key = "refresh_time";
     Lista[CONFIG_KEY_SERVICE_PORT].key = "service_port";
     Lista[CONFIG_KEY_START_PARAM].key  = "service_param";
+    
     Lista[CONFIG_KEY_MQTT_SERVER].key   = "mqtt_server";
     Lista[CONFIG_KEY_MQTT_CLIENTID].key = "mqtt_clientid";
     Lista[CONFIG_KEY_MQTT_TOPIC].key    = "mqtt_topic";
     Lista[CONFIG_KEY_MQTT_BINARY_TOPIC].key = "mqtt_binary_topic";
+    
+    Lista[CONFIG_KEY_DOMOTICZ_TOPIC].key         = "domoticz_topic";
+    
+    Lista[CONFIG_KEY_DOMOTICZ_STATE_ID].key = "domoticz_inverter_state";
+    Lista[CONFIG_KEY_DOMOTICZ_PV_POWER_ID].key   = "domoticz_pvpower_idx";
+    Lista[CONFIG_KEY_DOMOTICZ_GRID_POWER_ID].key = "domoticz_gridpower_idx";
+    Lista[CONFIG_KEY_DOMOTICZ_CONSUMTION_POWER_ID].key = "domoticz_consumption_idx";
     
     ConfigClearValue(&Lista, CONFIG_KEY_END_LIST);
     
@@ -107,8 +134,7 @@ int config_ReadFile(void)
         return EXIT_FAILURE;
     }
  
-    /* Logger parameters 
-     */
+    // Logger parameters 
     config_SetLoggerPar(Lista[CONFIG_KEY_LOGGER_SN].value,
                         Lista[CONFIG_KEY_LOGGER_IPADD].value,
                         Lista[CONFIG_KEY_LOGGER_PORT].value,
@@ -119,11 +145,17 @@ int config_ReadFile(void)
                       Lista[CONFIG_KEY_MQTT_TOPIC].value,
                       Lista[CONFIG_KEY_MQTT_BINARY_TOPIC].value);
     
+    config_SetDomoticzPar(Lista[CONFIG_KEY_DOMOTICZ_TOPIC].value,
+                          Lista[CONFIG_KEY_DOMOTICZ_PV_POWER_ID].value,
+                          Lista[CONFIG_KEY_DOMOTICZ_PV_POWER_ID].value,
+                          Lista[CONFIG_KEY_DOMOTICZ_GRID_POWER_ID].value,
+                          Lista[CONFIG_KEY_DOMOTICZ_CONSUMTION_POWER_ID].value);
+    
     /* Service initialize
      * port, refresh time
      */
-    cerr = config_SetServicePar( Lista[CONFIG_KEY_SERVICE_PORT].value,
-                                 Lista[CONFIG_KEY_START_PARAM].value );
+    cerr = config_SetServicePar(Lista[CONFIG_KEY_SERVICE_PORT].value,
+                                Lista[CONFIG_KEY_START_PARAM].value );
         
     return cerr;
 }

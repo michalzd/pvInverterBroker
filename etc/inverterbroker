@@ -14,10 +14,15 @@ service_port	8889
 # default port 1883, nie musi byc podawany
 mqtt_server	192.168.10.80:1883
 
-# w tym temacie dwa subtopic:
+# w tym temacie trzy subtopic:
 # json  z danymi json
 # state z danymi tekstowymi
+# bin   struktura z danymi binarnymi do wykorzystania we własnym programie
 mqtt_topic	ime/inverter
 
-# binaty data, struktura do wykorzystania we własnym programie 
-mqtt_binary_topic  ime/inverterbin
+#domoticz
+domoticz_topic	domoticz/in
+domoticz_pvpower_idx	 1026
+domoticz_gridpower_idx	 1027
+domoticz_consumption_idx 1028
+

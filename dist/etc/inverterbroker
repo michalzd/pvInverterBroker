@@ -1,29 +1,33 @@
-# Sofar Logger
-# SN jest podany na etykietce urządzenia
+# Sofar Logger 
 logger_sn	2363445823
-logger_addr	192.168.10.70
+logger_addr	192.168.10.20
 logger_port	8899
 
 # refresh time in sec
 refresh_time	30
 
-# broker udp port 
+# broker udp port, must be 8800 to 8890
 service_port	8889
 
-# mqtt server  
-# default port 1883, nie musi byc podawany
+#mqtt
 mqtt_server	192.168.10.80:1883
-
-# w tym temacie trzy subtopic:
-# json  z danymi json
-# state z danymi tekstowymi
-# bin   struktura z danymi binarnymi do wykorzystania we własnym programie
+mqtt_clientid	INVBA
 mqtt_topic	ime/inverter
-
+mqttss_binary_topic ime/inverterdata
 
 #domoticz
-domoticz_topic	domoticz/in
-domoticz_inverter_state  1025 
+domoticz_topic		 domoticz/in
+domoticz_inverter_state	 1020
 domoticz_pvpower_idx	 1026
 domoticz_gridpower_idx	 1027
 domoticz_consumption_idx 1028
+domoticz_pv1_string_idx  1030
+domoticz_pv2_string_idx  1031
+
+
+#unf controller
+mqtt_unf_topic	ime/unf
+mqtt_unf_binary_topic /ime/unfdata
+
+
+

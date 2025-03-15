@@ -23,6 +23,7 @@
 #include <time.h>
 #include <string.h>
 #include <mqtt/MQTTClient.h>
+#include <math.h>
 
 #include "retcode.h"
 #include "Service.h" 
@@ -328,9 +329,11 @@ int  mqtt_service_publish_domoticz(const char *idx, char *value)
 static
 int  mqtt_service_to_domoticz()
 { 
-    #define MSGVALUESIZE 16   
+    #define MSGVALUESIZE 32   
     char json[MSGVALUESIZE];
-    int32_t    activepower, avgpower, gridpower, consumption;
+    int32_t  activepower, avgpower, gridpower, consumption;
+    uint16_t pvVoltage;
+    double   pvCurrent;
     size_t len;
     
     if (config.domoticz.topic[0] == 0) return 0;
@@ -352,6 +355,23 @@ int  mqtt_service_to_domoticz()
     snprintf(json, MSGVALUESIZE, "%i", consumption);
     mqtt_service_publish_domoticz(config.domoticz.conspoweridx, json);
     
+     
+    pvVoltage = ntoi16(inverterInfo.PV1.voltage) / 10;
+    pvCurrent = ntoi16(inverterInfo.PV1.current);
+    pvCurrent = pvCurrent/100; 
+    //Multiple values in sValue are separated by ";"
+    snprintf(json, MSGVALUESIZE, "%i;%.2f", pvVoltage, pvCurrent);
+    mqtt_service_publish_domoticz(config.domoticz.pvstring1idx, json);
+    
+    if (inverterInfo.PV2.voltage > 0)
+    {
+        pvVoltage = ntoi16(inverterInfo.PV2.voltage) / 10; 
+        pvCurrent = ntoi16(inverterInfo.PV2.current);
+        pvCurrent = pvCurrent/100; 
+        snprintf(json, MSGVALUESIZE, "%i;%.2f", pvVoltage, pvCurrent);
+        mqtt_service_publish_domoticz(config.domoticz.pvstring1idx, json);
+    }
+     
     return 0;
 }
 

@@ -80,23 +80,29 @@ void config_SetMqttPar( const char *ip_address,  const char *client_id, const ch
 
 }
 
-void config_SetDomoticzPar(const char *topic,  const char *state_id, const char *pvpower_id, const char *gridpower_idx, const char *consumtonpover_idx )
+void config_SetDomoticzPar(const char *topic,  const char *state_id, 
+                           const char *pvpower_id, const char *gridpower_idx, const char *consumtonpover_idx,
+                           const char *pvstring1_id, const char *pvstring2_id)
 {
     config.domoticz.topic[0] = 0;
     config.domoticz.stateidx[0] = 0;
     config.domoticz.pvpoweridx[0] = 0;
     config.domoticz.gridpoweridx[0] = 0;
     config.domoticz.conspoweridx[0] = 0;
+    config.domoticz.pvstring1idx[0] = 0;
+    config.domoticz.pvstring2idx[0] = 0;
     
     if( strlen(topic)==0 ) return;
     if( strcmp(topic, "none" )==0 ) return;
     
     strncpy(config.domoticz.topic, topic, MQTT_TOPIC_SZ);
-    strncpy(config.domoticz.stateidx, state_id, MQTT_TOPIC_SZ);
+    strncpy(config.domoticz.stateidx, state_id, MQTT_DOMOTICZ_ID_SZ);
     strncpy(config.domoticz.pvpoweridx, pvpower_id, MQTT_DOMOTICZ_ID_SZ);
     
     if( strlen(gridpower_idx) ) strncpy(config.domoticz.gridpoweridx, gridpower_idx, MQTT_DOMOTICZ_ID_SZ);
     if( strlen(consumtonpover_idx) ) strncpy(config.domoticz.conspoweridx, consumtonpover_idx, MQTT_DOMOTICZ_ID_SZ);
+    if( strlen(pvstring1_id) ) strncpy(config.domoticz.pvstring1idx, pvstring1_id, MQTT_DOMOTICZ_ID_SZ);
+    if( strlen(pvstring2_id) ) strncpy(config.domoticz.pvstring2idx, pvstring2_id, MQTT_DOMOTICZ_ID_SZ);
 }
 
 int config_ReadFile(void)
@@ -123,6 +129,9 @@ int config_ReadFile(void)
     Lista[CONFIG_KEY_DOMOTICZ_PV_POWER_ID].key   = "domoticz_pvpower_idx";
     Lista[CONFIG_KEY_DOMOTICZ_GRID_POWER_ID].key = "domoticz_gridpower_idx";
     Lista[CONFIG_KEY_DOMOTICZ_CONSUMTION_POWER_ID].key = "domoticz_consumption_idx";
+    Lista[CONFIG_KEY_DOMOTICZ_PV1_ID].key = "domoticz_pv1_string_idx";
+    Lista[CONFIG_KEY_DOMOTICZ_PV1_ID].key = "domoticz_pv2_string_idx";
+    
     
     ConfigClearValue(&Lista, CONFIG_KEY_END_LIST);
     
@@ -149,13 +158,16 @@ int config_ReadFile(void)
                           Lista[CONFIG_KEY_DOMOTICZ_PV_POWER_ID].value,
                           Lista[CONFIG_KEY_DOMOTICZ_PV_POWER_ID].value,
                           Lista[CONFIG_KEY_DOMOTICZ_GRID_POWER_ID].value,
-                          Lista[CONFIG_KEY_DOMOTICZ_CONSUMTION_POWER_ID].value);
+                          Lista[CONFIG_KEY_DOMOTICZ_CONSUMTION_POWER_ID].value,
+                          Lista[CONFIG_KEY_DOMOTICZ_PV1_ID].value,
+                          Lista[CONFIG_KEY_DOMOTICZ_PV2_ID].value);
     
     /* Service initialize
      * port, refresh time
      */
     cerr = config_SetServicePar(Lista[CONFIG_KEY_SERVICE_PORT].value,
                                 Lista[CONFIG_KEY_START_PARAM].value );
-        
+    
+    
     return cerr;
 }

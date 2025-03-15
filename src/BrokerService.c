@@ -83,7 +83,7 @@ int broker_service_start()
     register int s = 0;
 
     srvsocket = 0;
-    uint16_t servicePort = config.service.port;
+    uint16_t servicePort = 0; // zablokuję config.service.port;
     if(servicePort)
     {
         s = broker_service_socket_open(config.service.port);

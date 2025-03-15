@@ -67,6 +67,8 @@ struct Domoticz
     char   pvpoweridx[MQTT_DOMOTICZ_ID_SZ];
     char   gridpoweridx[MQTT_DOMOTICZ_ID_SZ];
     char   conspoweridx[MQTT_DOMOTICZ_ID_SZ];
+    char   pvstring1idx[MQTT_DOMOTICZ_ID_SZ];
+    char   pvstring2idx[MQTT_DOMOTICZ_ID_SZ];
 };
 
 
@@ -102,7 +104,8 @@ enum CONFIG_KEY
     CONFIG_KEY_DOMOTICZ_PV_POWER_ID, 
     CONFIG_KEY_DOMOTICZ_GRID_POWER_ID,
     CONFIG_KEY_DOMOTICZ_CONSUMTION_POWER_ID,
-    
+    CONFIG_KEY_DOMOTICZ_PV1_ID,
+    CONFIG_KEY_DOMOTICZ_PV2_ID,
     CONFIG_KEY_END_LIST
 };
 

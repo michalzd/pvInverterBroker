@@ -21,9 +21,10 @@ domoticz_inverter_state	 1020
 domoticz_pvpower_idx	 1026
 domoticz_gridpower_idx	 1027
 domoticz_consumption_idx 1028
-domoticz_pv1_string_idx  1030
-domoticz_pv2_string_idx  1031
-
+domoticz_pv1_voltage_idx  1030
+domoticz_pv1_current_idx  1031
+domoticz_pv2_voltage_idx  1032
+domoticz_pv2_current_idx  1033
 
 #unf controller
 mqtt_unf_topic	ime/unf
